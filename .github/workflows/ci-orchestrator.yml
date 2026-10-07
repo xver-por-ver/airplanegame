@@ -1,0 +1,26 @@
+name: CI Orchestrator
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - LICENSE
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - LICENSE
+
+permissions:
+  contents: read
+
+jobs:
+  application-checks:
+    name: Application Quality Assurance
+    uses: ./.github/workflows/application-quality-assurance.yml
+
+  docker-build:
+    name: Docker build
+    needs: application-checks
+    uses: ./.github/workflows/docker.yml
