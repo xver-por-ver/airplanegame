@@ -2,6 +2,6 @@ node_modules/
 dist/
 public/js/
 public/*.html
-.scannerwork/
 .env
 .vscode/
+dev-tools/

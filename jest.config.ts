@@ -10,7 +10,7 @@ const jestConfig: JestConfigWithTsJest = {
   collectCoverageFrom: [
     'src/**'
   ],
-  coverageDirectory: '../dev-reports/devbox.d/web/coverage/airplanegame',
+  coverageDirectory: 'dev-tools/coverage',
   coveragePathIgnorePatterns: [
     '/node_modules/',
     'Interface\\.ts'
