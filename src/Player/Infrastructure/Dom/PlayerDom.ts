@@ -6,7 +6,7 @@ import { BaseDom } from './BaseDom';
 
 export class PlayerDom implements PlayerInterface {
   private score: number = 0;
-  private airplanes: AirplaneAbstractDom[] = [];
+  private readonly airplanes: AirplaneAbstractDom[] = [];
   private readonly base: BaseDom;
 
   constructor() {

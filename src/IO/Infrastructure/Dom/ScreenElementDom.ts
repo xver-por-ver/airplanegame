@@ -7,9 +7,9 @@ import { SpriteCordsDom } from './SpriteCordsDom';
 export class ScreenElementDom implements ScreenElementInterface {
   private loaded: boolean = false;
   private readonly graphic: HTMLImageElement;
-  private position: ScreenElementPositionDom;
-  private dimension: ScreenElementDimensionDom;
-  private spriteCords: SpriteCordsDom;
+  private readonly position: ScreenElementPositionDom;
+  private readonly dimension: ScreenElementDimensionDom;
+  private readonly spriteCords: SpriteCordsDom;
 
   constructor(
     domId: string,

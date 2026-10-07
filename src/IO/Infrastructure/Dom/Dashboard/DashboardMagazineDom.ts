@@ -4,7 +4,7 @@ import { DashboardMagazineInterface } from '../../../Domain/Dashboard/DashboardM
 import { Dom } from '../Dom';
 
 export class DashboardMagazineDom implements DashboardMagazineInterface {
-  private magazinesDisplays: HTMLElement[] = [];
+  private readonly magazinesDisplays: HTMLElement[] = [];
   private readonly magazinesContainer: HTMLElement;
 
   constructor(

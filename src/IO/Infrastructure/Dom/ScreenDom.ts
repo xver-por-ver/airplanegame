@@ -34,8 +34,6 @@ export class ScreenDom implements ScreenInterface {
         repaintRatePerSecond,
         millisecondsSinceLastAnimateCall,
       ),
-    );
-    screenElements.push(
       ...this.enemy.animate(
         repaintRatePerSecond,
         millisecondsSinceLastAnimateCall,
