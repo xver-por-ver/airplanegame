@@ -43,7 +43,6 @@ export class MenuDom implements MenuInterface {
     }
     if (animateScreen && this.menuPausedOpen) {
       this.closeMenu();
-      return;
     }
   }
 

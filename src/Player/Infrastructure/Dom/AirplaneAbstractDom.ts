@@ -5,7 +5,7 @@ import { FireRoundDom } from './FireRoundDom';
 export abstract class AirplaneAbstractDom implements AirplaneInterface {
   protected screenElement: ScreenElementDom;
   protected readonly magazineCapacity: number = 1;
-  private firedRounds: FireRoundDom[] = [];
+  private readonly firedRounds: FireRoundDom[] = [];
   private availableFireRounds: number = 0;
   private reloading: boolean = false;
   private readonly reloadTime: number = 1000; // millisedonds
@@ -57,17 +57,13 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
   }
 
   public fly(x: number, y: number, screenHeight: number): void {
+    const xPosition = x - (this.screenElement.getDimension().getWidth() + 10);
     const bottomLimit =
       screenHeight - (this.screenElement.getDimension().getHeight() + 8);
     const adjustedPosition = y - (this.verticalCenter + 6);
-    this.screenElement.setPosition(
-      x - (this.screenElement.getDimension().getWidth() + 10),
-      adjustedPosition > bottomLimit
-        ? bottomLimit
-        : adjustedPosition < 0
-          ? 0
-          : adjustedPosition,
-    );
+    const yPosition = Math.max(0, Math.min(bottomLimit, adjustedPosition));
+
+    this.screenElement.setPosition(xPosition, yPosition);
   }
 
   public fire(): void {

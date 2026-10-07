@@ -33,8 +33,20 @@ export abstract class MissileAbstractDom implements MissileInterface {
     );
     this.screenElement.setPosition(
       Math.round(0 - this.screenElement.getDimension().getWidth()),
-      Math.round(bottomLimit * Math.random()),
+      this.getRandomInteger(bottomLimit),
     );
+  }
+
+  private getRandomInteger(maximum: number): number {
+    const range = maximum + 1;
+    const maxUnbiasedValue = 2 ** 32 - (2 ** 32 % range);
+    const randomValue = new Uint32Array(1);
+
+    do {
+      globalThis.crypto.getRandomValues(randomValue);
+    } while (randomValue[0] >= maxUnbiasedValue);
+
+    return randomValue[0] % range;
   }
 
   public animate(repaintRatePerSecond: number): void {

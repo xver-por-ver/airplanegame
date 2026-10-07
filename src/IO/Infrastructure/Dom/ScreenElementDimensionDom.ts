@@ -2,8 +2,8 @@ import { ScreenElementDimensionInterface } from '../../Domain/ScreenElementDimen
 
 export class ScreenElementDimensionDom implements ScreenElementDimensionInterface {
   constructor(
-    private height: number,
-    private width: number,
+    private readonly height: number,
+    private readonly width: number,
   ) {
     this.validDimension(height, width);
   }
@@ -21,7 +21,7 @@ export class ScreenElementDimensionDom implements ScreenElementDimensionInterfac
       false === Number.isInteger(height) ||
       false === Number.isInteger(width)
     ) {
-      throw new Error('Fatal: provided argument is not an interger');
+      throw new TypeError('Fatal: provided argument is not an interger');
     }
 
     if (0 >= height || 0 >= width) {

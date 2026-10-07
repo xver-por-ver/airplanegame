@@ -21,7 +21,7 @@ export class SpriteCordsDom implements SpriteCordsInterface {
       false === Number.isInteger(positionX) ||
       false === Number.isInteger(positionY)
     ) {
-      throw new Error('Fatal: provided argument is not an interger');
+      throw new TypeError('Fatal: provided argument is not an interger');
     }
   }
 }

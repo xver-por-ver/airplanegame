@@ -43,7 +43,7 @@ describe('DashboardMagazineDom', () => {
 
     test('should initialize magazine displays for each airplane', () => {
         new DashboardMagazineDom(player, dom);
-        expect(magazinesContainer.children.length).toBe(airplanes.length);
+        expect(magazinesContainer.children).toHaveLength(airplanes.length);
         for (let i = 0; i < airplanes.length; i++) {
             expect(magazinesContainer.querySelector(`#magazine${i}`)).not.toBeNull();
         }
