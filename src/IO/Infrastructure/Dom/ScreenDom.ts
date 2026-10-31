@@ -3,12 +3,14 @@ import { HitDom } from '../../../Hit/Infrastructure/Dom/HitDom';
 import { PlayerDom } from '../../../Player/Infrastructure/Dom/PlayerDom';
 import { ScreenInterface } from '../../Domain/ScreenInterface';
 import { Dom } from './Dom';
+import { ScrollingBackgroundDom } from './ScrollingBackgroundDom';
 import { ScreenElementDom } from './ScreenElementDom';
 
 export class ScreenDom implements ScreenInterface {
   private readonly canvas: HTMLCanvasElement;
   private readonly canvasContext: CanvasRenderingContext2D;
   private pause: boolean = false;
+  private readonly background = new ScrollingBackgroundDom();
 
   constructor(
     private readonly player: PlayerDom,
@@ -59,6 +61,13 @@ export class ScreenDom implements ScreenInterface {
         );
       }
     });
+    this.canvasContext.globalCompositeOperation = 'destination-over';
+    this.background.animate(
+      this.canvasContext,
+      this.canvas.width,
+      this.canvas.height,
+      millisecondsSinceLastAnimateCall,
+    );
     this.hit.hasHits(this.canvas.width);
   }
 

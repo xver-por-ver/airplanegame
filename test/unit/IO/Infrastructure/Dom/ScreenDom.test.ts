@@ -25,8 +25,19 @@ describe('ScreenDom', () => {
     beforeEach(() => {
         canvas = document.getElementById('game') as HTMLCanvasElement;
         context = {
+            beginPath: jest.fn(),
+            bezierCurveTo: jest.fn(),
+            closePath: jest.fn(),
             drawImage: jest.fn(),
+            fill: jest.fn(),
+            fillRect: jest.fn(),
+            lineTo: jest.fn(),
+            moveTo: jest.fn(),
             reset: jest.fn(),
+            restore: jest.fn(),
+            save: jest.fn(),
+            stroke: jest.fn(),
+            translate: jest.fn(),
         } as unknown as CanvasRenderingContext2D;
         jest.spyOn(canvas, 'getContext').mockReturnValue(context);
 
@@ -86,6 +97,24 @@ describe('ScreenDom', () => {
         expect(enemy.animate).toHaveBeenCalledWith(60, 16, canvas.height, canvas.width);
         expect(context.drawImage).toHaveBeenCalledTimes(2);
         expect(hit.hasHits).toHaveBeenCalledWith(canvas.width);
+    });
+
+    test('should draw the background behind screen elements', () => {
+        const screenElement = new ScreenElementDom('sprite', 'screenelement', 32, 32, 0, 0);
+        jest.spyOn(screenElement, 'getLoaded').mockReturnValue(true);
+        jest.spyOn(screenElement, 'getSpriteCords').mockReturnValue(new SpriteCordsDom(0, 0));
+        jest.spyOn(screenElement, 'getDimension').mockReturnValue(new ScreenElementDimensionDom(1, 1));
+        jest.spyOn(screenElement, 'getPosition').mockReturnValue(new ScreenElementPositionDom(0, 0));
+        player.animate.mockReturnValue([screenElement]);
+        enemy.animate.mockReturnValue([]);
+
+        screen.animate(60, 16);
+
+        const drawImage = context.drawImage as jest.Mock;
+        const fillRect = context.fillRect as jest.Mock;
+        expect(drawImage.mock.invocationCallOrder[0]).toBeLessThan(
+            fillRect.mock.invocationCallOrder[0],
+        );
     });
 
     test('should not draw if screen element graphic is not loaded', () => {
