@@ -34,13 +34,10 @@ export class DashboardRadarDom implements DashboardRadarInterface {
     ) {
       this.displayActivate('-90px -89px', '<p>ATOMIC MISILE APPROACHING</p>');
     }
-    
+
     if (
-      (
-        false !== animateScreen || 
-        false !== this.player.defeated()
-      ) 
-      && this.player.getBase().baseHit()
+      (false !== animateScreen || false !== this.player.defeated()) &&
+      this.player.getBase().baseHit()
     ) {
       this.displayActivate(
         this.player.getBase().getSpritePosition(),
@@ -73,13 +70,7 @@ export class DashboardRadarDom implements DashboardRadarInterface {
   ): void {
     if (
       this.displayActivated &&
-      (
-        animateScreen || 
-        (
-          false === animateScreen &&
-          this.pause
-        )
-      )
+      (animateScreen || (false === animateScreen && this.pause))
     ) {
       this.displayDeactivationTimeout -= millisecondsSinceLastAnimateCall;
       if (0 >= this.displayDeactivationTimeout) {

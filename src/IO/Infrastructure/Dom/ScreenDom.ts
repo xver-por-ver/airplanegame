@@ -33,24 +33,21 @@ export class ScreenDom implements ScreenInterface {
     screenAnimate: boolean,
     repaintRatePerSecond: number,
     millisecondsSinceLastAnimateCall: number,
-    radarDisplayTime: number
+    radarDisplayTime: number,
   ): void {
     if (true === this.shakeInitiate) {
       this.shake.startShake(
         this.player.getBase().getHealth(),
-        radarDisplayTime
+        radarDisplayTime,
       );
       this.shakeInitiate = false;
-    }else{
+    } else {
       this.shake.animate(millisecondsSinceLastAnimateCall);
     }
     if (false === screenAnimate) {
       return;
     }
-    this.drawElements(
-      repaintRatePerSecond,
-      millisecondsSinceLastAnimateCall
-    );
+    this.drawElements(repaintRatePerSecond, millisecondsSinceLastAnimateCall);
     this.background.animate(
       this.canvasContext,
       this.canvas.width,
@@ -81,7 +78,10 @@ export class ScreenDom implements ScreenInterface {
     return this.pause;
   }
 
-  private drawElements(repaintRatePerSecond: number, millisecondsSinceLastAnimateCall: number): void {
+  private drawElements(
+    repaintRatePerSecond: number,
+    millisecondsSinceLastAnimateCall: number,
+  ): void {
     const screenElements: ScreenElementDom[] = [];
     screenElements.push(
       ...this.player.animate(

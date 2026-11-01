@@ -1,17 +1,16 @@
-import { ScreenShakeInterface } from "../../Domain/ScreenShakeInterface";
-import { ScreenDom } from "./ScreenDom";
+import { ScreenShakeInterface } from '../../Domain/ScreenShakeInterface';
+import { ScreenDom } from './ScreenDom';
 
 export class ScreenShakeDom implements ScreenShakeInterface {
   private shakeRemaining: number = 0;
   private shakeElapsed: number = 0;
   private shakeStrength: number = 0;
 
-  constructor(private readonly screen: ScreenDom) {
-  }
+  constructor(private readonly screen: ScreenDom) {}
 
   public startShake(
     remainingBaseHealth: number,
-    radarDisplayTime: number
+    radarDisplayTime: number,
   ): void {
     const damageLevel = Math.max(0, Math.min(3, 3 - remainingBaseHealth));
     this.shakeStrength = damageLevel * 2;
@@ -20,9 +19,7 @@ export class ScreenShakeDom implements ScreenShakeInterface {
     this.renderShakeOffset();
   }
 
-  public animate(
-    millisecondsSinceLastAnimateCall: number
-  ): void {
+  public animate(millisecondsSinceLastAnimateCall: number): void {
     if (0 === this.shakeRemaining) {
       return;
     }
