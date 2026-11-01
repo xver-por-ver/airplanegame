@@ -47,12 +47,12 @@ export default class Game {
     );
     this.lastAnimateCallTimestamp = timestamp;
 
-    if (this.controls.animateScreen()) {
-      this.screen.animate(
-        this.animateRatePerSecond,
-        this.millisecondsSinceLastAnimateCall,
-      );
-    }
+    this.screen.animate(
+      this.controls.animateScreen(),
+      this.animateRatePerSecond,
+      this.millisecondsSinceLastAnimateCall,
+      this.dashboard.getRadarAnouncementDisplayTime(),
+    );
     this.dashboard.animate(
       this.controls.animateScreen(),
       this.millisecondsSinceLastAnimateCall,

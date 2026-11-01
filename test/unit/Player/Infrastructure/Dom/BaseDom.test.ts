@@ -24,7 +24,7 @@ describe('BaseDom', () => {
 
   test('should unset pending radar announcement', () => {
     baseDom.applyDamage();
-    baseDom.unsetRadarAnnounce();
+    baseDom.baseHit();
     expect(baseDom.radarAnnounce()).toBe(false);
   });
 

@@ -36,4 +36,8 @@ export class DashboardDom implements DashboardInterface {
   public getPaused(): boolean {
     return this.dashboardRadar.getPaused();
   }
+
+  public getRadarAnouncementDisplayTime(): number {
+    return this.dashboardRadar.getDisplayTime();
+  }
 }

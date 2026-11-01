@@ -1,5 +1,6 @@
 import { describe, expect, jest, beforeEach, afterEach, test } from '@jest/globals';
 import { ScreenDom } from '../../../../../src/IO/Infrastructure/Dom/ScreenDom';
+import { BaseDom } from '../../../../../src/Player/Infrastructure/Dom/BaseDom';
 import { PlayerDom } from '../../../../../src/Player/Infrastructure/Dom/PlayerDom';
 import { EnemyDom } from '../../../../../src/Enemy/Infrastructure/Dom/EnemyDom';
 import { HitDom } from '../../../../../src/Hit/Infrastructure/Dom/HitDom';
@@ -89,9 +90,11 @@ describe('ScreenDom', () => {
         jest.spyOn(screenElement, 'getPosition').mockReturnValue(new ScreenElementPositionDom(0, 0));
 
         player.animate.mockReturnValue([screenElement]);
+        const base = new BaseDom();
+        player.getBase.mockReturnValue(base);
         enemy.animate.mockReturnValue([screenElement]);
 
-        screen.animate(60, 16);
+        screen.animate(true, 60, 16, 200);
 
         expect(player.animate).toHaveBeenCalledWith(60, 16);
         expect(enemy.animate).toHaveBeenCalledWith(60, 16, canvas.height, canvas.width);
@@ -106,9 +109,11 @@ describe('ScreenDom', () => {
         jest.spyOn(screenElement, 'getDimension').mockReturnValue(new ScreenElementDimensionDom(1, 1));
         jest.spyOn(screenElement, 'getPosition').mockReturnValue(new ScreenElementPositionDom(0, 0));
         player.animate.mockReturnValue([screenElement]);
+        const base = new BaseDom();
+        player.getBase.mockReturnValue(base);
         enemy.animate.mockReturnValue([]);
 
-        screen.animate(60, 16);
+        screen.animate(true, 60, 16, 200);
 
         const drawImage = context.drawImage as jest.Mock;
         const fillRect = context.fillRect as jest.Mock;
@@ -122,9 +127,11 @@ describe('ScreenDom', () => {
         jest.spyOn(screenElement, 'getLoaded').mockReturnValue(false);
 
         player.animate.mockReturnValue([screenElement]);
+        const base = new BaseDom();
+        player.getBase.mockReturnValue(base);
         enemy.animate.mockReturnValue([screenElement]);
 
-        screen.animate(60, 16);
+        screen.animate(true, 60, 16, 200);
 
         expect(player.animate).toHaveBeenCalledWith(60, 16);
         expect(enemy.animate).toHaveBeenCalledWith(60, 16, canvas.height, canvas.width);

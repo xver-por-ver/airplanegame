@@ -5,12 +5,15 @@ import { ScreenInterface } from '../../Domain/ScreenInterface';
 import { Dom } from './Dom';
 import { ScrollingBackgroundDom } from './ScrollingBackgroundDom';
 import { ScreenElementDom } from './ScreenElementDom';
+import { ScreenShakeDom } from './ScreenShakeDom';
 
 export class ScreenDom implements ScreenInterface {
   private readonly canvas: HTMLCanvasElement;
   private readonly canvasContext: CanvasRenderingContext2D;
   private pause: boolean = false;
   private readonly background = new ScrollingBackgroundDom();
+  private readonly shake = new ScreenShakeDom(this);
+  private shakeInitiate: boolean = false;
 
   constructor(
     private readonly player: PlayerDom,
@@ -27,9 +30,58 @@ export class ScreenDom implements ScreenInterface {
   }
 
   public animate(
+    screenAnimate: boolean,
     repaintRatePerSecond: number,
     millisecondsSinceLastAnimateCall: number,
+    radarDisplayTime: number
   ): void {
+    if (true === this.shakeInitiate) {
+      this.shake.startShake(
+        this.player.getBase().getHealth(),
+        radarDisplayTime
+      );
+      this.shakeInitiate = false;
+    }else{
+      this.shake.animate(millisecondsSinceLastAnimateCall);
+    }
+    if (false === screenAnimate) {
+      return;
+    }
+    this.drawElements(
+      repaintRatePerSecond,
+      millisecondsSinceLastAnimateCall
+    );
+    this.background.animate(
+      this.canvasContext,
+      this.canvas.width,
+      this.canvas.height,
+      millisecondsSinceLastAnimateCall,
+    );
+    this.hit.hasHits(this.canvas.width);
+    this.shakeInitiate = this.player.getBase().radarAnnounce();
+  }
+
+  public getCanvas(): HTMLCanvasElement {
+    return this.canvas;
+  }
+
+  private windowResize(): void {
+    this.pause = window.innerHeight < 760 || window.innerWidth <= 1032;
+  }
+
+  private windowFocus(): void {
+    this.pause = false;
+  }
+
+  private windowBlur(): void {
+    this.pause = true;
+  }
+
+  public getPaused(): boolean {
+    return this.pause;
+  }
+
+  private drawElements(repaintRatePerSecond: number, millisecondsSinceLastAnimateCall: number): void {
     const screenElements: ScreenElementDom[] = [];
     screenElements.push(
       ...this.player.animate(
@@ -62,32 +114,5 @@ export class ScreenDom implements ScreenInterface {
       }
     });
     this.canvasContext.globalCompositeOperation = 'destination-over';
-    this.background.animate(
-      this.canvasContext,
-      this.canvas.width,
-      this.canvas.height,
-      millisecondsSinceLastAnimateCall,
-    );
-    this.hit.hasHits(this.canvas.width);
-  }
-
-  public getCanvas(): HTMLCanvasElement {
-    return this.canvas;
-  }
-
-  private windowResize(): void {
-    this.pause = window.innerHeight < 760 || window.innerWidth <= 1032;
-  }
-
-  private windowFocus(): void {
-    this.pause = false;
-  }
-
-  private windowBlur(): void {
-    this.pause = true;
-  }
-
-  public getPaused(): boolean {
-    return this.pause;
   }
 }

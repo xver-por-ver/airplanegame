@@ -1,20 +1,23 @@
+import { EnemyDom } from '../../../Enemy/Infrastructure/Dom/EnemyDom';
+import { MissileAbstractDom } from '../../../Enemy/Infrastructure/Dom/MissileAbstractDom';
+import { MissileAtomicDom } from '../../../Enemy/Infrastructure/Dom/MissileAtomicDom';
 import { BaseInterface } from '../../Domain/BaseInterface';
 
 export class BaseDom implements BaseInterface {
   private health: number = 3;
-  private pendingRadarAnnouncement: boolean = false;
+  private pendingHitAnnouncement: boolean = false;
 
   public applyDamage(): void {
-    this.pendingRadarAnnouncement = true;
+    this.pendingHitAnnouncement = true;
     this.health--;
   }
 
   public radarAnnounce(): boolean {
-    return this.pendingRadarAnnouncement;
+    return this.pendingHitAnnouncement;
   }
 
-  public unsetRadarAnnounce(): void {
-    this.pendingRadarAnnouncement = false;
+  private unsetRadarAnnounce(): void {
+    this.pendingHitAnnouncement = false;
   }
 
   public getSpritePosition(): string {
@@ -39,5 +42,26 @@ export class BaseDom implements BaseInterface {
 
   public getHealth(): number {
     return this.health;
+  }
+
+  public atomicMissileDetection(enemy: EnemyDom): boolean {
+    const found = enemy
+      .getLaunchedMissiles()
+      .find((missile: MissileAbstractDom) => {
+        if (missile instanceof MissileAtomicDom && missile.radarAnnounce()) {
+          missile.unsetRadarAnnounce();
+          return true;
+        }
+        return false;
+      });
+    return undefined !== found;
+  }
+
+  public baseHit(): boolean {
+    if (this.radarAnnounce()) {
+      this.unsetRadarAnnounce();
+      return true;
+    }
+    return false;
   }
 }
