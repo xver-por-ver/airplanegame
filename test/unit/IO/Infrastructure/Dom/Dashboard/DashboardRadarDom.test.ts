@@ -50,6 +50,10 @@ describe('DashboardRadarDom', () => {
         expect(() => new DashboardRadarDom(player, enemy, dom)).not.toThrow();
     });
 
+    test('should return the radar announcement display duration', () => {
+        expect(dashboardRadar.getDisplayTime()).toBe(2000);
+    });
+
     test('should throw error when radar image element is missing', () => {
         document.body.removeChild(radarImg);
         expect(() => new DashboardRadarDom(player, enemy, dom)).toThrow("Fatal: non existent element with id 'radarImg'");

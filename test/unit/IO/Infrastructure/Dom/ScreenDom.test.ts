@@ -82,6 +82,38 @@ describe('ScreenDom', () => {
         expect(screen.getPaused()).toBe(true);
     });
 
+    test.each([
+        { w: 1033, h: 760 },
+        { w: 1033, h: 800 },
+    ])('should remain unpaused at valid dimensions', ({ w, h }) => {
+        Object.defineProperty(window, 'innerHeight', { value: h });
+        Object.defineProperty(window, 'innerWidth', { value: w });
+        window.dispatchEvent(new Event('resize'));
+        expect(screen.getPaused()).toBe(false);
+    });
+
+    test('should skip drawing when animation is disabled', () => {
+        screen.animate(false, 60, 16, 200);
+        expect(player.animate).not.toHaveBeenCalled();
+        expect(enemy.animate).not.toHaveBeenCalled();
+        expect(hit.hasHits).not.toHaveBeenCalled();
+        expect(context.reset).not.toHaveBeenCalled();
+    });
+
+    test('should start shake after a base hit and continue drawing', () => {
+        const base = new BaseDom();
+        base.applyDamage();
+        player.getBase.mockReturnValue(base);
+        enemy.animate.mockReturnValue([]);
+        player.animate.mockReturnValue([]);
+
+        screen.animate(true, 60, 16, 200);
+        expect(base.radarAnnounce()).toBe(true);
+        screen.animate(true, 60, 16, 200);
+        expect(screen.getCanvas().style.transform).toContain('translate(');
+        expect(player.getBase).toHaveBeenCalled();
+    });
+
     test('should animate screen elements', () => {
         const screenElement = new ScreenElementDom('sprite', 'screenelement', 32, 32, 0, 0);
         jest.spyOn(screenElement, 'getLoaded').mockReturnValue(true);

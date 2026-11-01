@@ -48,6 +48,14 @@ describe('DashboardDom', () => {
         expect(scoreInstance.animate).toHaveBeenCalled();
     });
 
+    test('getRadarAnouncementDisplayTime should return the radar display time', () => {
+        const dashboard = new DashboardDom(player, enemy);
+        const radarInstance = (DashboardRadarDom as jest.Mock).mock.instances[0] as DashboardRadarDom;
+        jest.spyOn(radarInstance, 'getDisplayTime').mockReturnValue(1234);
+
+        expect(dashboard.getRadarAnouncementDisplayTime()).toBe(1234);
+    });
+
     test('getPaused should return the value from dashboardRadar', () => {
         const dashboard = new DashboardDom(player, enemy);
         const radarInstance = (DashboardRadarDom as jest.Mock).mock.instances[0] as DashboardRadarDom;
