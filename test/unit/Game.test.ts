@@ -74,12 +74,13 @@ describe('Game', () => {
     (PlayerControlsDom.prototype.animateScreen as jest.Mock).mockReturnValue(true);
     (PlayerControlsDom.prototype.getGameInitiated as jest.Mock).mockReturnValue(true);
     (DashboardDom.prototype.getPaused as jest.Mock).mockReturnValue(false);
+    (DashboardDom.prototype.getRadarAnouncementDisplayTime as jest.Mock).mockReturnValue(200);
     (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(false);
 
     const animate = (window.requestAnimationFrame as jest.Mock).mock.calls[0][0] as (time: number) => void;
     animate(100);
 
-    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(10, 100);
+    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(true, 10, 100, 200);
     expect(DashboardDom.prototype.animate).toHaveBeenCalledWith(true, 100);
     expect(MenuDom.prototype.animate).toHaveBeenCalledWith(100, true, true, false, false);
   });
@@ -91,8 +92,8 @@ describe('Game', () => {
     animate(100);
     animate(125);
 
-    expect(ScreenDom.prototype.animate).toHaveBeenNthCalledWith(1, 10, 100);
-    expect(ScreenDom.prototype.animate).toHaveBeenNthCalledWith(2, 40, 25);
+    expect(ScreenDom.prototype.animate).toHaveBeenNthCalledWith(1, true, 10, 100, 200);
+    expect(ScreenDom.prototype.animate).toHaveBeenNthCalledWith(2, true, 40, 25, 200);
     expect(DashboardDom.prototype.animate).toHaveBeenNthCalledWith(2, true, 25);
   });
 
@@ -109,7 +110,7 @@ describe('Game', () => {
     expect(PlayerControlsDom.prototype.getGameInitiated).toHaveBeenCalledTimes(1);
     expect(DashboardDom.prototype.getPaused).toHaveBeenCalledTimes(1);
     expect(PlayerDom.prototype.defeated).toHaveBeenCalledTimes(1);
-    expect(ScreenDom.prototype.animate).not.toHaveBeenCalled();
+    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(false, 20, 50, 200);
     expect(DashboardDom.prototype.animate).toHaveBeenCalledWith(false, 50);
     expect(MenuDom.prototype.animate).toHaveBeenCalledWith(50, true, false, false, false);
   });

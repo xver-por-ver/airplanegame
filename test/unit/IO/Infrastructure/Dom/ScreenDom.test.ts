@@ -1,5 +1,6 @@
 import { describe, expect, jest, beforeEach, afterEach, test } from '@jest/globals';
 import { ScreenDom } from '../../../../../src/IO/Infrastructure/Dom/ScreenDom';
+import { BaseDom } from '../../../../../src/Player/Infrastructure/Dom/BaseDom';
 import { PlayerDom } from '../../../../../src/Player/Infrastructure/Dom/PlayerDom';
 import { EnemyDom } from '../../../../../src/Enemy/Infrastructure/Dom/EnemyDom';
 import { HitDom } from '../../../../../src/Hit/Infrastructure/Dom/HitDom';
@@ -25,8 +26,19 @@ describe('ScreenDom', () => {
     beforeEach(() => {
         canvas = document.getElementById('game') as HTMLCanvasElement;
         context = {
+            beginPath: jest.fn(),
+            bezierCurveTo: jest.fn(),
+            closePath: jest.fn(),
             drawImage: jest.fn(),
+            fill: jest.fn(),
+            fillRect: jest.fn(),
+            lineTo: jest.fn(),
+            moveTo: jest.fn(),
             reset: jest.fn(),
+            restore: jest.fn(),
+            save: jest.fn(),
+            stroke: jest.fn(),
+            translate: jest.fn(),
         } as unknown as CanvasRenderingContext2D;
         jest.spyOn(canvas, 'getContext').mockReturnValue(context);
 
@@ -70,6 +82,38 @@ describe('ScreenDom', () => {
         expect(screen.getPaused()).toBe(true);
     });
 
+    test.each([
+        { w: 1033, h: 760 },
+        { w: 1033, h: 800 },
+    ])('should remain unpaused at valid dimensions', ({ w, h }) => {
+        Object.defineProperty(window, 'innerHeight', { value: h });
+        Object.defineProperty(window, 'innerWidth', { value: w });
+        window.dispatchEvent(new Event('resize'));
+        expect(screen.getPaused()).toBe(false);
+    });
+
+    test('should skip drawing when animation is disabled', () => {
+        screen.animate(false, 60, 16, 200);
+        expect(player.animate).not.toHaveBeenCalled();
+        expect(enemy.animate).not.toHaveBeenCalled();
+        expect(hit.hasHits).not.toHaveBeenCalled();
+        expect(context.reset).not.toHaveBeenCalled();
+    });
+
+    test('should start shake after a base hit and continue drawing', () => {
+        const base = new BaseDom();
+        base.applyDamage();
+        player.getBase.mockReturnValue(base);
+        enemy.animate.mockReturnValue([]);
+        player.animate.mockReturnValue([]);
+
+        screen.animate(true, 60, 16, 200);
+        expect(base.radarAnnounce()).toBe(true);
+        screen.animate(true, 60, 16, 200);
+        expect(screen.getCanvas().style.transform).toContain('translate(');
+        expect(player.getBase).toHaveBeenCalled();
+    });
+
     test('should animate screen elements', () => {
         const screenElement = new ScreenElementDom('sprite', 'screenelement', 32, 32, 0, 0);
         jest.spyOn(screenElement, 'getLoaded').mockReturnValue(true);
@@ -78,9 +122,11 @@ describe('ScreenDom', () => {
         jest.spyOn(screenElement, 'getPosition').mockReturnValue(new ScreenElementPositionDom(0, 0));
 
         player.animate.mockReturnValue([screenElement]);
+        const base = new BaseDom();
+        player.getBase.mockReturnValue(base);
         enemy.animate.mockReturnValue([screenElement]);
 
-        screen.animate(60, 16);
+        screen.animate(true, 60, 16, 200);
 
         expect(player.animate).toHaveBeenCalledWith(60, 16);
         expect(enemy.animate).toHaveBeenCalledWith(60, 16, canvas.height, canvas.width);
@@ -88,14 +134,36 @@ describe('ScreenDom', () => {
         expect(hit.hasHits).toHaveBeenCalledWith(canvas.width);
     });
 
+    test('should draw the background behind screen elements', () => {
+        const screenElement = new ScreenElementDom('sprite', 'screenelement', 32, 32, 0, 0);
+        jest.spyOn(screenElement, 'getLoaded').mockReturnValue(true);
+        jest.spyOn(screenElement, 'getSpriteCords').mockReturnValue(new SpriteCordsDom(0, 0));
+        jest.spyOn(screenElement, 'getDimension').mockReturnValue(new ScreenElementDimensionDom(1, 1));
+        jest.spyOn(screenElement, 'getPosition').mockReturnValue(new ScreenElementPositionDom(0, 0));
+        player.animate.mockReturnValue([screenElement]);
+        const base = new BaseDom();
+        player.getBase.mockReturnValue(base);
+        enemy.animate.mockReturnValue([]);
+
+        screen.animate(true, 60, 16, 200);
+
+        const drawImage = context.drawImage as jest.Mock;
+        const fillRect = context.fillRect as jest.Mock;
+        expect(drawImage.mock.invocationCallOrder[0]).toBeLessThan(
+            fillRect.mock.invocationCallOrder[0],
+        );
+    });
+
     test('should not draw if screen element graphic is not loaded', () => {
         const screenElement = new ScreenElementDom('sprite', 'screenelement', 32, 32, 0, 0);
         jest.spyOn(screenElement, 'getLoaded').mockReturnValue(false);
 
         player.animate.mockReturnValue([screenElement]);
+        const base = new BaseDom();
+        player.getBase.mockReturnValue(base);
         enemy.animate.mockReturnValue([screenElement]);
 
-        screen.animate(60, 16);
+        screen.animate(true, 60, 16, 200);
 
         expect(player.animate).toHaveBeenCalledWith(60, 16);
         expect(enemy.animate).toHaveBeenCalledWith(60, 16, canvas.height, canvas.width);

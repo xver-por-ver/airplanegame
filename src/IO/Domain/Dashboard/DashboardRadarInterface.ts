@@ -4,4 +4,5 @@ export interface DashboardRadarInterface {
     millisecondsSinceLastAnimateCall: number,
   ): void;
   getPaused(): boolean;
+  getDisplayTime(): number;
 }
