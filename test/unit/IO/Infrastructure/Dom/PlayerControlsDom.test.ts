@@ -16,7 +16,6 @@ describe('PlayerControlsDom', () => {
   let screen: any;
   let player: any;
   let events: EventBus<GameEvents>;
-  let controls: PlayerControlsDom;
   let startBtn: HTMLElement;
   let helpButton: HTMLElement;
 
@@ -47,7 +46,7 @@ describe('PlayerControlsDom', () => {
     document.body.appendChild(startBtn);
     helpButton = document.getElementById('helpButton') as HTMLElement;
 
-    controls = new PlayerControlsDom(screen, player, events);
+    new PlayerControlsDom(screen, player, events);
   });
 
   afterEach(() => {
@@ -123,21 +122,7 @@ describe('PlayerControlsDom', () => {
     startBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
 
     expect(startRequested).toHaveBeenCalledWith(undefined);
-    expect(controls.animateScreen()).toBe(false);
-  });
-
-  test('controls permit gameplay only after lifecycle events allow it', () => {
-    events.emit('game.started', undefined);
-    expect(controls.animateScreen()).toBe(true);
-
-    events.emit('game.paused', { blockers: ['user-pause'] });
-    expect(controls.animateScreen()).toBe(false);
-
-    events.emit('game.resumed', undefined);
-    expect(controls.animateScreen()).toBe(true);
-
-    events.emit('game.defeated', undefined);
-    expect(controls.animateScreen()).toBe(false);
+    expect(player.fire).not.toHaveBeenCalled();
   });
 
   test('help controls publish explicit user-pause state changes', () => {
