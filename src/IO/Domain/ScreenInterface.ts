@@ -1,8 +1,9 @@
+import { FrameTiming } from '../../FrameTiming';
+
 export interface ScreenInterface {
   animate(
     screenAnimate: boolean,
-    repaintRatePerSecond: number,
-    millisecondsSinceLastAnimateCall: number,
-    radarDisplayTime: number,
+    frameTiming: FrameTiming,
+    radarAnouncementDuration: number,
   ): void;
 }

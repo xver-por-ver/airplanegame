@@ -1,16 +1,15 @@
 import { PlayerDom } from '../../../Player/Infrastructure/Dom/PlayerDom';
 import { EventBusInterface } from '../../Domain/EventBusInterface';
 import { GameEvents } from '../../Domain/GameEventsInterface';
-import { PlayerControlsInterface } from '../../Domain/PlayerControlsInterface';
+import { PlayerControlPolicy } from '../PlayerControlPolicy';
 import { Dom } from './Dom';
 import { ScreenDom } from './ScreenDom';
 
-export class PlayerControlsDom implements PlayerControlsInterface {
+export class PlayerControlsDom {
   private readonly canvasWidth: number;
   private readonly canvasHeight: number;
-  private gameCanRun: boolean = false;
-  private userRequestedPause: boolean = false;
   private readonly dom: Dom;
+  private readonly policy: PlayerControlPolicy;
 
   constructor(
     private readonly screen: ScreenDom,
@@ -20,18 +19,12 @@ export class PlayerControlsDom implements PlayerControlsInterface {
     this.dom = new Dom();
     this.canvasWidth = this.screen.getCanvas().width;
     this.canvasHeight = this.screen.getCanvas().height;
-    this.events.on('game.started', () => {
-      this.gameCanRun = true;
-    });
-    this.events.on('game.paused', () => {
-      this.gameCanRun = false;
-    });
-    this.events.on('game.resumed', () => {
-      this.gameCanRun = true;
-    });
-    this.events.on('game.defeated', () => {
-      this.gameCanRun = false;
-    });
+    this.policy = new PlayerControlPolicy(
+      this.player,
+      this.events,
+      this.canvasWidth,
+      this.canvasHeight,
+    );
     this.dom.addEventListener(
       this.screen.getCanvas(),
       'mousemove',
@@ -43,11 +36,6 @@ export class PlayerControlsDom implements PlayerControlsInterface {
       'mousedown',
       this.mouseDownEvent.bind(this),
     );
-    this.player.fly(
-      this.canvasWidth,
-      Math.round(this.canvasHeight / 2),
-      this.canvasHeight,
-    );
   }
 
   private mouseDownEvent(ev: MouseEvent): void {
@@ -57,16 +45,16 @@ export class PlayerControlsDom implements PlayerControlsInterface {
     }
 
     if (this.dom.assertEventTarget(ev, 'helpButton')) {
-      this.setUserPause(true);
+      this.policy.setUserPause(true);
       return;
     }
 
     if (this.dom.assertEventTarget(ev, 'helpCloseButton')) {
-      this.setUserPause(false);
+      this.policy.setUserPause(false);
       return;
     }
 
-    this.fire();
+    this.policy.fire();
   }
 
   private mouseMoveEvent(ev: MouseEvent): void {
@@ -74,39 +62,15 @@ export class PlayerControlsDom implements PlayerControlsInterface {
     const canvasY = Math.round(
       ((ev.clientY - canvasRect.top) * this.canvasHeight) / canvasRect.height,
     );
-    this.fly(canvasY);
+    this.policy.steer(canvasY);
   }
 
   private keyDownEvent(ev: KeyboardEvent): void {
     if ('Shift' === ev.key) {
-      this.fire();
+      this.policy.fire();
     }
     if ('p' === ev.key) {
-      this.setUserPause(!this.userRequestedPause);
+      this.policy.toggleUserPause();
     }
-  }
-
-  private fly(y: number): void {
-    if (this.animateScreen()) {
-      this.player.fly(this.canvasWidth, y, this.canvasHeight);
-    }
-  }
-
-  private fire(): void {
-    if (this.animateScreen()) {
-      this.player.fire();
-    }
-  }
-
-  private setUserPause(paused: boolean): void {
-    if (this.userRequestedPause === paused) {
-      return;
-    }
-    this.userRequestedPause = paused;
-    this.events.emit('game.userPauseChanged', { paused });
-  }
-
-  public animateScreen(): boolean {
-    return this.gameCanRun;
   }
 }

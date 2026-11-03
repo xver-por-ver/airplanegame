@@ -7,6 +7,7 @@ import {
   test,
 } from '@jest/globals';
 import { ScreenDom } from '../../../../../src/IO/Infrastructure/Dom/ScreenDom';
+import { FrameTiming } from '../../../../../src/FrameTiming';
 import { BaseDom } from '../../../../../src/Player/Infrastructure/Dom/BaseDom';
 import { PlayerDom } from '../../../../../src/Player/Infrastructure/Dom/PlayerDom';
 import { EnemyDom } from '../../../../../src/Enemy/Infrastructure/Dom/EnemyDom';
@@ -16,8 +17,6 @@ import { SpriteCordsDom } from '../../../../../src/IO/Infrastructure/Dom/SpriteC
 import { ScreenElementDimensionDom } from '../../../../../src/IO/Infrastructure/Dom/ScreenElementDimensionDom';
 import { ScreenElementPositionDom } from '../../../../../src/IO/Infrastructure/Dom/ScreenElementPositionDom';
 import { resetDocument } from '../../../../DomDocumentInit';
-import { EventBus } from '../../../../../src/IO/Infrastructure/EventBus';
-import { GameEvents } from '../../../../../src/IO/Domain/GameEventsInterface';
 
 jest.mock('../../../../../src/Player/Infrastructure/Dom/PlayerDom');
 jest.mock('../../../../../src/Enemy/Infrastructure/Dom/EnemyDom');
@@ -31,11 +30,6 @@ describe('ScreenDom', () => {
   let hit: jest.Mocked<HitDom>;
   let canvas: HTMLCanvasElement;
   let context: CanvasRenderingContext2D;
-  let events: EventBus<GameEvents>;
-  let availabilityChanges: Array<{
-    focused: boolean;
-    meetsMinimumResolution: boolean;
-  }>;
 
   beforeEach(() => {
     Object.defineProperty(window, 'innerWidth', {
@@ -46,11 +40,6 @@ describe('ScreenDom', () => {
       configurable: true,
       value: 800,
     });
-    events = new EventBus<GameEvents>();
-    availabilityChanges = [];
-    events.on('window.availabilityChanged', (status) =>
-      availabilityChanges.push(status),
-    );
     canvas = document.getElementById('game') as HTMLCanvasElement;
     context = {
       beginPath: jest.fn(),
@@ -73,7 +62,7 @@ describe('ScreenDom', () => {
     enemy = new EnemyDom() as jest.Mocked<EnemyDom>;
     hit = new HitDom(player, enemy) as jest.Mocked<HitDom>;
 
-    screen = new ScreenDom(player, enemy, hit, events);
+    screen = new ScreenDom(player, enemy, hit);
   });
 
   afterEach(() => {
@@ -85,52 +74,9 @@ describe('ScreenDom', () => {
     expect(screen.getCanvas()).toBe(canvas);
   });
 
-  test('publishes minimum-resolution status on construction and resize', () => {
-    expect(availabilityChanges).toEqual([
-      { focused: true, meetsMinimumResolution: true },
-    ]);
-
-    Object.defineProperty(window, 'innerHeight', { value: 759 });
-    window.dispatchEvent(new Event('resize'));
-
-    expect(availabilityChanges[availabilityChanges.length - 1]).toEqual({
-      focused: true,
-      meetsMinimumResolution: false,
-    });
-  });
-
-  test('publishes focus changes without losing resolution status', () => {
-    window.dispatchEvent(new Event('blur'));
-    expect(availabilityChanges[availabilityChanges.length - 1]).toEqual({
-      focused: false,
-      meetsMinimumResolution: true,
-    });
-
-    window.dispatchEvent(new Event('focus'));
-    expect(availabilityChanges[availabilityChanges.length - 1]).toEqual({
-      focused: true,
-      meetsMinimumResolution: true,
-    });
-  });
-
-  test.each([
-    { w: 1033, h: 760 },
-    { w: 1033, h: 800 },
-  ])(
-    'publishes availability when the window meets minimum dimensions',
-    ({ w, h }) => {
-      Object.defineProperty(window, 'innerHeight', { value: h });
-      Object.defineProperty(window, 'innerWidth', { value: w });
-      window.dispatchEvent(new Event('resize'));
-      expect(availabilityChanges[availabilityChanges.length - 1]).toEqual({
-        focused: true,
-        meetsMinimumResolution: true,
-      });
-    },
-  );
-
   test('should skip drawing when animation is disabled', () => {
-    screen.animate(false, 60, 16, 200);
+    player.getBase.mockReturnValue(new BaseDom());
+    screen.animate(false, FrameTiming.between(16, 0), 200);
     expect(player.animate).not.toHaveBeenCalled();
     expect(enemy.animate).not.toHaveBeenCalled();
     expect(hit.hasHits).not.toHaveBeenCalled();
@@ -144,9 +90,9 @@ describe('ScreenDom', () => {
     enemy.animate.mockReturnValue([]);
     player.animate.mockReturnValue([]);
 
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
     expect(base.radarAnnounce()).toBe(true);
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
     expect(screen.getCanvas().style.transform).toContain('translate(');
     expect(player.getBase).toHaveBeenCalled();
   });
@@ -176,11 +122,11 @@ describe('ScreenDom', () => {
     player.getBase.mockReturnValue(base);
     enemy.animate.mockReturnValue([screenElement]);
 
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
 
-    expect(player.animate).toHaveBeenCalledWith(60, 16);
+    expect(player.animate).toHaveBeenCalledWith(63, 16);
     expect(enemy.animate).toHaveBeenCalledWith(
-      60,
+      63,
       16,
       canvas.height,
       canvas.width,
@@ -213,7 +159,7 @@ describe('ScreenDom', () => {
     player.getBase.mockReturnValue(base);
     enemy.animate.mockReturnValue([]);
 
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
 
     const drawImage = context.drawImage as jest.Mock;
     const fillRect = context.fillRect as jest.Mock;
@@ -238,11 +184,11 @@ describe('ScreenDom', () => {
     player.getBase.mockReturnValue(base);
     enemy.animate.mockReturnValue([screenElement]);
 
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
 
-    expect(player.animate).toHaveBeenCalledWith(60, 16);
+    expect(player.animate).toHaveBeenCalledWith(63, 16);
     expect(enemy.animate).toHaveBeenCalledWith(
-      60,
+      63,
       16,
       canvas.height,
       canvas.width,

@@ -11,29 +11,29 @@ describe('ScreenShakeDom', () => {
 
   test('starts shaking with strength based on base health', () => {
     const { canvas, shake } = makeShake();
-    shake.startShake(1, 300);
+    shake.animate(true, 0, 300, 1);
     expect(canvas.style.transform).toContain('translate(');
-    shake.animate(30);
+    shake.animate(false, 30, 300, 1);
     expect(canvas.style.transform).not.toBe('');
   });
 
   test('clamps damage level and clears the transform at expiration', () => {
     const { canvas, shake } = makeShake();
-    shake.startShake(-1, 50);
+    shake.animate(true, 0, 50, -1);
     expect(canvas.style.transform).toContain('translate(');
-    shake.animate(50);
+    shake.animate(false, 50, 50, -1);
     expect(canvas.style.transform).toBe('');
-    shake.animate(25);
+    shake.animate(false, 25, 50, -1);
     expect(canvas.style.transform).toBe('');
   });
 
   test('supports zero-duration shake and clamps healthy base strength', () => {
     const { canvas, shake } = makeShake();
-    shake.startShake(8, 0);
+    shake.animate(true, 0, 0, 8);
     expect(canvas.style.transform).toBe('');
-    shake.animate(1);
+    shake.animate(false, 1, 0, 8);
     expect(canvas.style.transform).toBe('');
-    shake.startShake(3, 100);
+    shake.animate(true, 0, 100, 3);
     expect(canvas.style.transform).toContain('translate(');
   });
 });
