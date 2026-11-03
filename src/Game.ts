@@ -10,6 +10,7 @@ import { EventBusInterface } from './IO/Domain/EventBusInterface';
 import { GameEvents } from './IO/Domain/GameEventsInterface';
 import { GameLifecycle } from './IO/Infrastructure/GameLifecycle';
 import { WindowAvailabilityDom } from './IO/Infrastructure/Dom/WindowAvailabilityDom';
+import { FrameTiming } from './FrameTiming';
 
 export default class Game {
   private readonly player: PlayerDom;
@@ -20,9 +21,7 @@ export default class Game {
   private readonly events: EventBusInterface<GameEvents>;
   private readonly lifecycle: GameLifecycle;
   private gameDefeated: boolean = false;
-  private millisecondsSinceLastAnimateCall: number = 0;
   private lastAnimateCallTimestamp: number = 0;
-  private animateRatePerSecond: number = 0;
 
   constructor() {
     this.events = new EventBus<GameEvents>();
@@ -46,27 +45,25 @@ export default class Game {
   }
 
   private animate(timestamp: number): void {
-    this.millisecondsSinceLastAnimateCall = Math.round(
-      timestamp - this.lastAnimateCallTimestamp,
-    );
-    this.animateRatePerSecond = Math.round(
-      1000 / this.millisecondsSinceLastAnimateCall,
+    const frameTiming = FrameTiming.between(
+      timestamp,
+      this.lastAnimateCallTimestamp,
     );
     this.lastAnimateCallTimestamp = timestamp;
 
     this.updateDefeatedState();
     this.screen.animate(
       this.lifecycle.isRunning(),
-      this.animateRatePerSecond,
-      this.millisecondsSinceLastAnimateCall,
+      frameTiming.framesPerSecond,
+      frameTiming.millisecondsSincePreviousFrame,
       this.dashboard.getRadarAnouncementDisplayTime(),
     );
     this.dashboard.animate(
       this.lifecycle.isRunning(),
-      this.millisecondsSinceLastAnimateCall,
+      frameTiming.millisecondsSincePreviousFrame,
     );
     this.updateDefeatedState();
-    this.menu.animate(this.millisecondsSinceLastAnimateCall);
+    this.menu.animate(frameTiming.millisecondsSincePreviousFrame);
 
     if (false === this.menu.gameOverDisplayed()) {
       this.requestAnimation();
