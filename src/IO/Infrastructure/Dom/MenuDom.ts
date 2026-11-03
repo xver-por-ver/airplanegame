@@ -1,5 +1,5 @@
 import { EventBusInterface } from '../../Domain/EventBusInterface';
-import { GameEvents } from '../../Domain/GameEvents';
+import { GameEvents } from '../../Domain/GameEventsInterface';
 import { MenuInterface } from '../../Domain/MenuInterface';
 import { Dom } from './Dom';
 

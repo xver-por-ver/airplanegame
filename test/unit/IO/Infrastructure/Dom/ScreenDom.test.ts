@@ -17,7 +17,7 @@ import { ScreenElementDimensionDom } from '../../../../../src/IO/Infrastructure/
 import { ScreenElementPositionDom } from '../../../../../src/IO/Infrastructure/Dom/ScreenElementPositionDom';
 import { resetDocument } from '../../../../DomDocumentInit';
 import { EventBus } from '../../../../../src/IO/Infrastructure/EventBus';
-import { GameEvents } from '../../../../../src/IO/Domain/GameEvents';
+import { GameEvents } from '../../../../../src/IO/Domain/GameEventsInterface';
 
 jest.mock('../../../../../src/Player/Infrastructure/Dom/PlayerDom');
 jest.mock('../../../../../src/Enemy/Infrastructure/Dom/EnemyDom');

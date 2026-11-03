@@ -14,7 +14,7 @@ import { DashboardMagazineDom } from '../../../../../../src/IO/Infrastructure/Do
 import { DashboardRadarDom } from '../../../../../../src/IO/Infrastructure/Dom/Dashboard/DashboardRadarDom';
 import { DashboardScoreDom } from '../../../../../../src/IO/Infrastructure/Dom/Dashboard/DashboardScoreDom';
 import { EventBus } from '../../../../../../src/IO/Infrastructure/EventBus';
-import { GameEvents } from '../../../../../../src/IO/Domain/GameEvents';
+import { GameEvents } from '../../../../../../src/IO/Domain/GameEventsInterface';
 
 jest.mock(
   '../../../../../../src/IO/Infrastructure/Dom/Dashboard/DashboardMagazineDom',

@@ -15,7 +15,7 @@ import { Dom } from '../../../../../../src/IO/Infrastructure/Dom/Dom';
 import { resetDocument } from '../../../../../DomDocumentInit';
 import { BaseDom } from '../../../../../../src/Player/Infrastructure/Dom/BaseDom';
 import { EventBus } from '../../../../../../src/IO/Infrastructure/EventBus';
-import { GameEvents } from '../../../../../../src/IO/Domain/GameEvents';
+import { GameEvents } from '../../../../../../src/IO/Domain/GameEventsInterface';
 
 const createBaseDomMock = (
   overrides: Partial<jest.Mocked<BaseDom>> = {},

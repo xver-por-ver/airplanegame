@@ -8,7 +8,7 @@ import {
 } from '@jest/globals';
 import { PlayerControlsDom } from '../../../../../src/IO/Infrastructure/Dom/PlayerControlsDom';
 import { EventBus } from '../../../../../src/IO/Infrastructure/EventBus';
-import { GameEvents } from '../../../../../src/IO/Domain/GameEvents';
+import { GameEvents } from '../../../../../src/IO/Domain/GameEventsInterface';
 import { resetDocument } from '../../../../DomDocumentInit';
 
 describe('PlayerControlsDom', () => {
@@ -123,6 +123,18 @@ describe('PlayerControlsDom', () => {
     events.emit('game.paused', { blockers: ['user-pause'] });
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' }));
     expect(player.fire).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not emit when the user-pause state is unchanged', () => {
+    const pauseChanges: boolean[] = [];
+    events.on('game.userPauseChanged', ({ paused }) =>
+      pauseChanges.push(paused),
+    );
+
+    helpButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    helpButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+    expect(pauseChanges).toEqual([true]);
   });
 
   test('P toggles an explicit user-pause state', () => {

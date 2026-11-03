@@ -2,7 +2,7 @@ import { EnemyDom } from '../../../../Enemy/Infrastructure/Dom/EnemyDom';
 import { PlayerDom } from '../../../../Player/Infrastructure/Dom/PlayerDom';
 import { DashboardInterface } from '../../../Domain/Dashboard/DashboardInterface';
 import { EventBusInterface } from '../../../Domain/EventBusInterface';
-import { GameEvents } from '../../../Domain/GameEvents';
+import { GameEvents } from '../../../Domain/GameEventsInterface';
 import { Dom } from '../Dom';
 import { DashboardMagazineDom } from './DashboardMagazineDom';
 import { DashboardRadarDom } from './DashboardRadarDom';

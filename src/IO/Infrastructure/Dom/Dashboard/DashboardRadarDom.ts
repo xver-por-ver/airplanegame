@@ -1,7 +1,7 @@
 import { EnemyDom } from '../../../../Enemy/Infrastructure/Dom/EnemyDom';
 import { PlayerDom } from '../../../../Player/Infrastructure/Dom/PlayerDom';
 import { EventBusInterface } from '../../../Domain/EventBusInterface';
-import { GameEvents } from '../../../Domain/GameEvents';
+import { GameEvents } from '../../../Domain/GameEventsInterface';
 import { DashboardRadarInterface } from '../../../Domain/Dashboard/DashboardRadarInterface';
 import { Dom } from '../Dom';
 

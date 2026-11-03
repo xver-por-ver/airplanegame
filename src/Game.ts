@@ -7,7 +7,7 @@ import { HitDom } from './Hit/Infrastructure/Dom/HitDom';
 import { MenuDom } from './IO/Infrastructure/Dom/MenuDom';
 import { EventBus } from './IO/Infrastructure/EventBus';
 import { EventBusInterface } from './IO/Domain/EventBusInterface';
-import { GameEvents, GamePauseBlocker } from './IO/Domain/GameEvents';
+import { GameEvents, GamePauseBlocker } from './IO/Domain/GameEventsInterface';
 
 export default class Game {
   private readonly player: PlayerDom;

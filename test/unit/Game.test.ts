@@ -8,7 +8,7 @@ import { PlayerDom } from '../../src/Player/Infrastructure/Dom/PlayerDom';
 import { MenuDom } from '../../src/IO/Infrastructure/Dom/MenuDom';
 import { HitDom } from '../../src/Hit/Infrastructure/Dom/HitDom';
 import { EventBusInterface } from '../../src/IO/Domain/EventBusInterface';
-import { GameEvents } from '../../src/IO/Domain/GameEvents';
+import { GameEvents } from '../../src/IO/Domain/GameEventsInterface';
 
 jest.mock('../../src/IO/Infrastructure/Dom/PlayerControlsDom');
 jest.mock('../../src/IO/Infrastructure/Dom/ScreenDom');
@@ -24,6 +24,7 @@ const eventBusFromGame = (): EventBusInterface<GameEvents> =>
 describe('Game', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(false);
     window.requestAnimationFrame = jest.fn(() => 0);
     (
       DashboardDom.prototype.getRadarAnouncementDisplayTime as jest.Mock
@@ -58,6 +59,42 @@ describe('Game', () => {
 
   test('should call requestAnimationFrame on instantiation', () => {
     expect(window.requestAnimationFrame).toHaveBeenCalledTimes(1);
+  });
+
+  test('ignores repeated start requests', () => {
+    const events = eventBusFromGame();
+    const started = jest.fn();
+    events.on('game.started', started);
+
+    events.emit('game.startRequested', undefined);
+    events.emit('game.startRequested', undefined);
+
+    expect(started).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not start after the player is defeated', () => {
+    const events = eventBusFromGame();
+    const started = jest.fn();
+    events.on('game.started', started);
+    (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(true);
+
+    events.emit('game.startRequested', undefined);
+
+    expect(started).not.toHaveBeenCalled();
+  });
+
+  test('starts paused when a window blocker is already active', () => {
+    const events = eventBusFromGame();
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: false,
+    });
+    const paused = jest.fn();
+    events.on('game.paused', paused);
+
+    events.emit('game.startRequested', undefined);
+
+    expect(paused).toHaveBeenCalledWith({ blockers: ['minimum-resolution'] });
   });
 
   test('runs only after the start request and pauses when a blocker appears', () => {

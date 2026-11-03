@@ -24,9 +24,9 @@ export class EventBus<
     eventListeners.add(entry);
 
     return () => {
-      eventListeners?.delete(entry);
+      eventListeners.delete(entry);
       if (
-        eventListeners?.size === 0 &&
+        eventListeners.size === 0 &&
         this.listeners.get(event) === eventListeners
       ) {
         this.listeners.delete(event);

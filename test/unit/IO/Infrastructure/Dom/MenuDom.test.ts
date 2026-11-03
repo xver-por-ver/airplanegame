@@ -1,7 +1,7 @@
 import { describe, expect, beforeEach, afterEach, test } from '@jest/globals';
 import { MenuDom } from '../../../../../src/IO/Infrastructure/Dom/MenuDom';
 import { EventBus } from '../../../../../src/IO/Infrastructure/EventBus';
-import { GameEvents } from '../../../../../src/IO/Domain/GameEvents';
+import { GameEvents } from '../../../../../src/IO/Domain/GameEventsInterface';
 import { resetDocument } from '../../../../DomDocumentInit';
 
 describe('MenuDom', () => {
@@ -54,6 +54,22 @@ describe('MenuDom', () => {
     expect(container.innerHTML).toContain('Help Menu');
     expect(container.innerHTML).toContain('<th>Controls</th>');
     expect(container.innerHTML).toContain('helpCloseButton');
+    expect(overlay.style.visibility).toBe('visible');
+  });
+
+  test('restores the pause menu when resolution recovers but a blocker remains', () => {
+    events.emit('game.started', undefined);
+    events.emit('game.paused', { blockers: ['user-pause'] });
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: false,
+    });
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: true,
+    });
+
+    expect(container.innerHTML).toContain('Help Menu');
     expect(overlay.style.visibility).toBe('visible');
   });
 

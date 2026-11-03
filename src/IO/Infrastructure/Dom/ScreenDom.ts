@@ -2,7 +2,7 @@ import { EnemyDom } from '../../../Enemy/Infrastructure/Dom/EnemyDom';
 import { HitDom } from '../../../Hit/Infrastructure/Dom/HitDom';
 import { PlayerDom } from '../../../Player/Infrastructure/Dom/PlayerDom';
 import { EventBusInterface } from '../../Domain/EventBusInterface';
-import { GameEvents } from '../../Domain/GameEvents';
+import { GameEvents } from '../../Domain/GameEventsInterface';
 import { ScreenInterface } from '../../Domain/ScreenInterface';
 import { Dom } from './Dom';
 import { ScrollingBackgroundDom } from './ScrollingBackgroundDom';

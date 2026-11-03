@@ -1,6 +1,6 @@
 import { PlayerDom } from '../../../Player/Infrastructure/Dom/PlayerDom';
 import { EventBusInterface } from '../../Domain/EventBusInterface';
-import { GameEvents } from '../../Domain/GameEvents';
+import { GameEvents } from '../../Domain/GameEventsInterface';
 import { PlayerControlsInterface } from '../../Domain/PlayerControlsInterface';
 import { Dom } from './Dom';
 import { ScreenDom } from './ScreenDom';
