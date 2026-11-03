@@ -235,6 +235,13 @@ div#infoOverlay div#infoContainer div.helpMenu h2 {
     color: var(--signal);
 }
 
+div#infoOverlay div#infoContainer div.helpMenu p {
+    position: static;
+    margin: 0;
+    transform: none;
+    line-height: 1.6;
+}
+
 div#infoOverlay div#infoContainer div.helpMenu table {
     width: 100%;
     margin-bottom: 24px;

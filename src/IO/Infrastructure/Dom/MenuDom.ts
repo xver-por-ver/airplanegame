@@ -1,53 +1,73 @@
+import { EventBusInterface } from '../../Domain/EventBusInterface';
+import { GameEvents } from '../../Domain/GameEvents';
 import { MenuInterface } from '../../Domain/MenuInterface';
 import { Dom } from './Dom';
 
 export class MenuDom implements MenuInterface {
   private readonly menuOverlay: HTMLElement;
   private readonly menuContainer: HTMLElement;
-  private menuWelcomeOpen: boolean = false;
   private menuPausedOpen: boolean = false;
+  private gameStarted: boolean = false;
+  private gamePaused: boolean = false;
+  private resolutionWarningOpen: boolean = false;
+  private gameDefeated: boolean = false;
   private delayTillGameOverMenu: number = 3000;
 
-  constructor() {
+  constructor(events: EventBusInterface<GameEvents>) {
     const dom = new Dom();
     this.menuOverlay = dom.getElementById('infoOverlay');
     this.menuContainer = dom.getElementById('infoContainer');
     this.welcome();
+    events.on('game.started', () => {
+      this.gameStarted = true;
+      this.closeMenu();
+    });
+    events.on('game.paused', ({ blockers }) => {
+      this.gamePaused = true;
+      if (blockers.some((blocker) => 'gameplay-hold' !== blocker)) {
+        this.pause();
+      }
+    });
+    events.on('game.resumed', () => {
+      this.gamePaused = false;
+      if (this.menuPausedOpen) {
+        this.closeMenu();
+      }
+    });
+    events.on('window.availabilityChanged', ({ meetsMinimumResolution }) => {
+      if (!meetsMinimumResolution) {
+        this.resolutionWarningOpen = true;
+        this.loadMenu(
+          '<div class="helpMenu"><h2>Screen too small</h2>' +
+            '<p>Airplanegame requires a screen resolution of at least ' +
+            '1033 × 760 pixels. Enlarge your browser window to continue.</p>' +
+            '</div>',
+        );
+        return;
+      }
+      if (this.resolutionWarningOpen) {
+        this.resolutionWarningOpen = false;
+        if (!this.gameStarted) {
+          this.welcome();
+        } else if (this.gamePaused) {
+          this.pause();
+        } else {
+          this.closeMenu();
+        }
+      }
+    });
+    events.on('game.defeated', () => {
+      this.gameDefeated = true;
+    });
   }
 
-  public animate(
-    millisecondsSinceLastAnimateCall: number,
-    gameInitiated: boolean,
-    animateScreen: boolean,
-    isDashboardPause: boolean,
-    defeated: boolean,
-  ): void {
-    if (defeated) {
+  public animate(millisecondsSinceLastAnimateCall: number): void {
+    if (this.gameDefeated) {
       this.gameOver(millisecondsSinceLastAnimateCall);
-      return;
-    }
-
-    if (gameInitiated && this.menuWelcomeOpen) {
-      this.closeMenu();
-      this.menuWelcomeOpen = false;
-      return;
-    }
-    if (
-      false === animateScreen &&
-      !this.menuPausedOpen &&
-      !this.menuWelcomeOpen &&
-      !isDashboardPause
-    ) {
-      this.pause();
-      return;
-    }
-    if (animateScreen && this.menuPausedOpen) {
-      this.closeMenu();
     }
   }
 
   private welcome(): void {
-    this.menuWelcomeOpen = true;
     let menuContent: string = '';
     menuContent += '<a href="javascript:void();" id="gameStartButton">PLAY</a>';
     this.loadMenu('<p>' + menuContent + '</p>');
@@ -87,7 +107,6 @@ export class MenuDom implements MenuInterface {
 
   public closeMenu(): void {
     this.menuPausedOpen = false;
-    this.menuWelcomeOpen = false;
     this.menuOverlay.style.visibility = 'hidden';
   }
 

@@ -1,22 +1,35 @@
 import { PlayerDom } from '../../../Player/Infrastructure/Dom/PlayerDom';
+import { EventBusInterface } from '../../Domain/EventBusInterface';
+import { GameEvents } from '../../Domain/GameEvents';
 import { PlayerControlsInterface } from '../../Domain/PlayerControlsInterface';
-import { DashboardDom } from './Dashboard/DashboardDom';
 import { Dom } from './Dom';
 import { ScreenDom } from './ScreenDom';
 
 export class PlayerControlsDom implements PlayerControlsInterface {
   private readonly canvasRect: DOMRect;
-  private gameInitiated: boolean = false;
+  private gameCanRun: boolean = false;
   private userRequestedPause: boolean = false;
   private readonly dom: Dom;
 
   constructor(
     private readonly screen: ScreenDom,
     private readonly player: PlayerDom,
-    private readonly dashboard: DashboardDom,
+    private readonly events: EventBusInterface<GameEvents>,
   ) {
     this.dom = new Dom();
     this.canvasRect = this.screen.getCanvas().getBoundingClientRect();
+    this.events.on('game.started', () => {
+      this.gameCanRun = true;
+    });
+    this.events.on('game.paused', () => {
+      this.gameCanRun = false;
+    });
+    this.events.on('game.resumed', () => {
+      this.gameCanRun = true;
+    });
+    this.events.on('game.defeated', () => {
+      this.gameCanRun = false;
+    });
     this.dom.addEventListener(
       this.screen.getCanvas(),
       'mousemove',
@@ -37,17 +50,17 @@ export class PlayerControlsDom implements PlayerControlsInterface {
 
   private mouseDownEvent(ev: MouseEvent): void {
     if (this.dom.assertEventTarget(ev, 'gameStartButton')) {
-      this.gameInitiated = true;
+      this.events.emit('game.startRequested', undefined);
       return;
     }
 
     if (this.dom.assertEventTarget(ev, 'helpButton')) {
-      this.userRequestedPause = true;
+      this.setUserPause(true);
       return;
     }
 
     if (this.dom.assertEventTarget(ev, 'helpCloseButton')) {
-      this.userRequestedPause = false;
+      this.setUserPause(false);
       return;
     }
 
@@ -63,7 +76,7 @@ export class PlayerControlsDom implements PlayerControlsInterface {
       this.fire();
     }
     if ('p' === ev.key) {
-      this.userRequestedPause = !this.userRequestedPause;
+      this.setUserPause(!this.userRequestedPause);
     }
   }
 
@@ -79,17 +92,15 @@ export class PlayerControlsDom implements PlayerControlsInterface {
     }
   }
 
-  public getGameInitiated(): boolean {
-    return this.gameInitiated;
+  private setUserPause(paused: boolean): void {
+    if (this.userRequestedPause === paused) {
+      return;
+    }
+    this.userRequestedPause = paused;
+    this.events.emit('game.userPauseChanged', { paused });
   }
 
   public animateScreen(): boolean {
-    return (
-      this.gameInitiated &&
-      !this.player.defeated() &&
-      !this.userRequestedPause &&
-      !this.screen.getPaused() &&
-      !this.dashboard.getPaused()
-    );
+    return this.gameCanRun;
   }
 }
