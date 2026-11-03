@@ -1,8 +1,6 @@
 import { EnemyDom } from '../../../Enemy/Infrastructure/Dom/EnemyDom';
 import { HitDom } from '../../../Hit/Infrastructure/Dom/HitDom';
 import { PlayerDom } from '../../../Player/Infrastructure/Dom/PlayerDom';
-import { EventBusInterface } from '../../Domain/EventBusInterface';
-import { GameEvents } from '../../Domain/GameEventsInterface';
 import { ScreenInterface } from '../../Domain/ScreenInterface';
 import { Dom } from './Dom';
 import { ScrollingBackgroundDom } from './ScrollingBackgroundDom';
@@ -12,10 +10,6 @@ import { ScreenShakeDom } from './ScreenShakeDom';
 export class ScreenDom implements ScreenInterface {
   private readonly canvas: HTMLCanvasElement;
   private readonly canvasContext: CanvasRenderingContext2D;
-  private windowFocused: boolean = true;
-  private meetsMinimumResolution: boolean = true;
-  private windowAvailabilityInitialized: boolean = false;
-  private lastPublishedWindowFocus: boolean = true;
   private readonly background = new ScrollingBackgroundDom();
   private readonly shake = new ScreenShakeDom(this);
   private shakeInitialize: boolean = false;
@@ -24,16 +18,10 @@ export class ScreenDom implements ScreenInterface {
     private readonly player: PlayerDom,
     private readonly enemy: EnemyDom,
     private readonly hit: HitDom,
-    private readonly events: EventBusInterface<GameEvents>,
   ) {
     const dom = new Dom();
     this.canvas = dom.getCanvasById('game');
     this.canvasContext = dom.getCanvasContext2d(this.canvas);
-    this.publishWindowAvailability();
-
-    dom.addEventListener(window, 'resize', this.windowResize.bind(this));
-    dom.addEventListener(window, 'focus', this.windowFocus.bind(this));
-    dom.addEventListener(window, 'blur', this.windowBlur.bind(this));
   }
 
   public animate(
@@ -65,40 +53,6 @@ export class ScreenDom implements ScreenInterface {
 
   public getCanvas(): HTMLCanvasElement {
     return this.canvas;
-  }
-
-  private windowResize(): void {
-    this.publishWindowAvailability();
-  }
-
-  private windowFocus(): void {
-    this.windowFocused = true;
-    this.publishWindowAvailability();
-  }
-
-  private windowBlur(): void {
-    this.windowFocused = false;
-    this.publishWindowAvailability();
-  }
-
-  private publishWindowAvailability(): void {
-    const meetsMinimumResolution =
-      window.innerHeight >= 760 && window.innerWidth > 1032;
-    if (
-      this.windowAvailabilityInitialized &&
-      this.meetsMinimumResolution === meetsMinimumResolution &&
-      this.windowFocused === this.lastPublishedWindowFocus
-    ) {
-      return;
-    }
-
-    this.windowAvailabilityInitialized = true;
-    this.lastPublishedWindowFocus = this.windowFocused;
-    this.meetsMinimumResolution = meetsMinimumResolution;
-    this.events.emit('window.availabilityChanged', {
-      focused: this.windowFocused,
-      meetsMinimumResolution,
-    });
   }
 
   private drawElements(

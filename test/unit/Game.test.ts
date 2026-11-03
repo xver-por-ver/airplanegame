@@ -23,6 +23,14 @@ const eventBusFromGame = (): EventBusInterface<GameEvents> =>
 
 describe('Game', () => {
   beforeEach(() => {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 1280,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: 800,
+    });
     jest.clearAllMocks();
     (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(false);
     window.requestAnimationFrame = jest.fn(() => 0);
@@ -52,7 +60,7 @@ describe('Game', () => {
 
     expect(DashboardDom).toHaveBeenCalledWith(player, enemy, events);
     expect(HitDom).toHaveBeenCalledWith(player, enemy);
-    expect(ScreenDom).toHaveBeenCalledWith(player, enemy, hit, events);
+    expect(ScreenDom).toHaveBeenCalledWith(player, enemy, hit);
     expect(MenuDom).toHaveBeenCalledWith(events);
     expect(PlayerControlsDom).toHaveBeenCalledWith(screen, player, events);
   });

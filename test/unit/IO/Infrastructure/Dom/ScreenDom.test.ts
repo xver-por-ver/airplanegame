@@ -16,8 +16,6 @@ import { SpriteCordsDom } from '../../../../../src/IO/Infrastructure/Dom/SpriteC
 import { ScreenElementDimensionDom } from '../../../../../src/IO/Infrastructure/Dom/ScreenElementDimensionDom';
 import { ScreenElementPositionDom } from '../../../../../src/IO/Infrastructure/Dom/ScreenElementPositionDom';
 import { resetDocument } from '../../../../DomDocumentInit';
-import { EventBus } from '../../../../../src/IO/Infrastructure/EventBus';
-import { GameEvents } from '../../../../../src/IO/Domain/GameEventsInterface';
 
 jest.mock('../../../../../src/Player/Infrastructure/Dom/PlayerDom');
 jest.mock('../../../../../src/Enemy/Infrastructure/Dom/EnemyDom');
@@ -31,11 +29,6 @@ describe('ScreenDom', () => {
   let hit: jest.Mocked<HitDom>;
   let canvas: HTMLCanvasElement;
   let context: CanvasRenderingContext2D;
-  let events: EventBus<GameEvents>;
-  let availabilityChanges: Array<{
-    focused: boolean;
-    meetsMinimumResolution: boolean;
-  }>;
 
   beforeEach(() => {
     Object.defineProperty(window, 'innerWidth', {
@@ -46,11 +39,6 @@ describe('ScreenDom', () => {
       configurable: true,
       value: 800,
     });
-    events = new EventBus<GameEvents>();
-    availabilityChanges = [];
-    events.on('window.availabilityChanged', (status) =>
-      availabilityChanges.push(status),
-    );
     canvas = document.getElementById('game') as HTMLCanvasElement;
     context = {
       beginPath: jest.fn(),
@@ -73,7 +61,7 @@ describe('ScreenDom', () => {
     enemy = new EnemyDom() as jest.Mocked<EnemyDom>;
     hit = new HitDom(player, enemy) as jest.Mocked<HitDom>;
 
-    screen = new ScreenDom(player, enemy, hit, events);
+    screen = new ScreenDom(player, enemy, hit);
   });
 
   afterEach(() => {
@@ -84,50 +72,6 @@ describe('ScreenDom', () => {
   test('should initialize and return canvas', () => {
     expect(screen.getCanvas()).toBe(canvas);
   });
-
-  test('publishes minimum-resolution status on construction and resize', () => {
-    expect(availabilityChanges).toEqual([
-      { focused: true, meetsMinimumResolution: true },
-    ]);
-
-    Object.defineProperty(window, 'innerHeight', { value: 759 });
-    window.dispatchEvent(new Event('resize'));
-
-    expect(availabilityChanges[availabilityChanges.length - 1]).toEqual({
-      focused: true,
-      meetsMinimumResolution: false,
-    });
-  });
-
-  test('publishes focus changes without losing resolution status', () => {
-    window.dispatchEvent(new Event('blur'));
-    expect(availabilityChanges[availabilityChanges.length - 1]).toEqual({
-      focused: false,
-      meetsMinimumResolution: true,
-    });
-
-    window.dispatchEvent(new Event('focus'));
-    expect(availabilityChanges[availabilityChanges.length - 1]).toEqual({
-      focused: true,
-      meetsMinimumResolution: true,
-    });
-  });
-
-  test.each([
-    { w: 1033, h: 760 },
-    { w: 1033, h: 800 },
-  ])(
-    'publishes availability when the window meets minimum dimensions',
-    ({ w, h }) => {
-      Object.defineProperty(window, 'innerHeight', { value: h });
-      Object.defineProperty(window, 'innerWidth', { value: w });
-      window.dispatchEvent(new Event('resize'));
-      expect(availabilityChanges[availabilityChanges.length - 1]).toEqual({
-        focused: true,
-        meetsMinimumResolution: true,
-      });
-    },
-  );
 
   test('should skip drawing when animation is disabled', () => {
     player.getBase.mockReturnValue(new BaseDom());

@@ -9,6 +9,7 @@ import { EventBus } from './IO/Infrastructure/EventBus';
 import { EventBusInterface } from './IO/Domain/EventBusInterface';
 import { GameEvents } from './IO/Domain/GameEventsInterface';
 import { GameLifecycle } from './IO/Infrastructure/GameLifecycle';
+import { WindowAvailabilityDom } from './IO/Infrastructure/Dom/WindowAvailabilityDom';
 
 export default class Game {
   private readonly player: PlayerDom;
@@ -32,11 +33,11 @@ export default class Game {
 
     this.dashboard = new DashboardDom(this.player, this.enemy, this.events);
     this.menu = new MenuDom(this.events);
+    new WindowAvailabilityDom(this.events);
     this.screen = new ScreenDom(
       this.player,
       this.enemy,
       new HitDom(this.player, this.enemy),
-      this.events,
     );
 
     new PlayerControlsDom(this.screen, this.player, this.events);
