@@ -2,6 +2,7 @@ import { EnemyDom } from '../../../Enemy/Infrastructure/Dom/EnemyDom';
 import { HitDom } from '../../../Hit/Infrastructure/Dom/HitDom';
 import { PlayerDom } from '../../../Player/Infrastructure/Dom/PlayerDom';
 import { ScreenInterface } from '../../Domain/ScreenInterface';
+import { FrameTiming } from '../../../FrameTiming';
 import { Dom } from './Dom';
 import { ScrollingBackgroundDom } from './ScrollingBackgroundDom';
 import { ScreenElementDom } from './ScreenElementDom';
@@ -26,13 +27,12 @@ export class ScreenDom implements ScreenInterface {
 
   public animate(
     screenAnimate: boolean,
-    repaintRatePerSecond: number,
-    millisecondsSinceLastAnimateCall: number,
+    frameTiming: FrameTiming,
     radarAnouncementDuration: number,
   ): void {
     this.shake.animate(
       this.shakeInitialize,
-      millisecondsSinceLastAnimateCall,
+      frameTiming.millisecondsSincePreviousFrame,
       radarAnouncementDuration,
       this.player.getBase().getHealth(),
     );
@@ -40,12 +40,12 @@ export class ScreenDom implements ScreenInterface {
     if (false === screenAnimate) {
       return;
     }
-    this.drawElements(repaintRatePerSecond, millisecondsSinceLastAnimateCall);
+    this.drawElements(frameTiming);
     this.background.animate(
       this.canvasContext,
       this.canvas.width,
       this.canvas.height,
-      millisecondsSinceLastAnimateCall,
+      frameTiming.millisecondsSincePreviousFrame,
     );
     this.hit.hasHits(this.canvas.width);
     this.shakeInitialize = this.player.getBase().radarAnnounce();
@@ -55,19 +55,16 @@ export class ScreenDom implements ScreenInterface {
     return this.canvas;
   }
 
-  private drawElements(
-    repaintRatePerSecond: number,
-    millisecondsSinceLastAnimateCall: number,
-  ): void {
+  private drawElements(frameTiming: FrameTiming): void {
     const screenElements: ScreenElementDom[] = [];
     screenElements.push(
       ...this.player.animate(
-        repaintRatePerSecond,
-        millisecondsSinceLastAnimateCall,
+        frameTiming.framesPerSecond,
+        frameTiming.millisecondsSincePreviousFrame,
       ),
       ...this.enemy.animate(
-        repaintRatePerSecond,
-        millisecondsSinceLastAnimateCall,
+        frameTiming.framesPerSecond,
+        frameTiming.millisecondsSincePreviousFrame,
         this.canvas.height,
         this.canvas.width,
       ),

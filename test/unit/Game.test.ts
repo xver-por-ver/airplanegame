@@ -1,5 +1,6 @@
 import { describe, expect, jest, beforeEach, test } from '@jest/globals';
 import Game from '../../src/Game';
+import { FrameTiming } from '../../src/FrameTiming';
 import { PlayerControlsDom } from '../../src/IO/Infrastructure/Dom/PlayerControlsDom';
 import { ScreenDom } from '../../src/IO/Infrastructure/Dom/ScreenDom';
 import { DashboardDom } from '../../src/IO/Infrastructure/Dom/Dashboard/DashboardDom';
@@ -120,8 +121,7 @@ describe('Game', () => {
 
     expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(
       false,
-      63,
-      16,
+      FrameTiming.between(16, 0),
       200,
     );
     expect(DashboardDom.prototype.animate).toHaveBeenCalledWith(false, 16);
@@ -161,7 +161,11 @@ describe('Game', () => {
       .calls[0][0] as (time: number) => void;
     animate(16);
 
-    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(true, 63, 16, 200);
+    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(
+      true,
+      FrameTiming.between(16, 0),
+      200,
+    );
     expect(DashboardDom.prototype.animate).toHaveBeenCalledWith(true, 16);
     expect(MenuDom.prototype.animate).toHaveBeenCalledWith(16);
     expect(window.requestAnimationFrame).toHaveBeenCalledTimes(2);
@@ -182,8 +186,7 @@ describe('Game', () => {
     expect(defeated).toHaveBeenCalledTimes(1);
     expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(
       false,
-      63,
-      16,
+      FrameTiming.between(16, 0),
       200,
     );
   });

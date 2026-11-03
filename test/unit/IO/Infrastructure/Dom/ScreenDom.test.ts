@@ -7,6 +7,7 @@ import {
   test,
 } from '@jest/globals';
 import { ScreenDom } from '../../../../../src/IO/Infrastructure/Dom/ScreenDom';
+import { FrameTiming } from '../../../../../src/FrameTiming';
 import { BaseDom } from '../../../../../src/Player/Infrastructure/Dom/BaseDom';
 import { PlayerDom } from '../../../../../src/Player/Infrastructure/Dom/PlayerDom';
 import { EnemyDom } from '../../../../../src/Enemy/Infrastructure/Dom/EnemyDom';
@@ -75,7 +76,7 @@ describe('ScreenDom', () => {
 
   test('should skip drawing when animation is disabled', () => {
     player.getBase.mockReturnValue(new BaseDom());
-    screen.animate(false, 60, 16, 200);
+    screen.animate(false, FrameTiming.between(16, 0), 200);
     expect(player.animate).not.toHaveBeenCalled();
     expect(enemy.animate).not.toHaveBeenCalled();
     expect(hit.hasHits).not.toHaveBeenCalled();
@@ -89,9 +90,9 @@ describe('ScreenDom', () => {
     enemy.animate.mockReturnValue([]);
     player.animate.mockReturnValue([]);
 
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
     expect(base.radarAnnounce()).toBe(true);
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
     expect(screen.getCanvas().style.transform).toContain('translate(');
     expect(player.getBase).toHaveBeenCalled();
   });
@@ -121,11 +122,11 @@ describe('ScreenDom', () => {
     player.getBase.mockReturnValue(base);
     enemy.animate.mockReturnValue([screenElement]);
 
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
 
-    expect(player.animate).toHaveBeenCalledWith(60, 16);
+    expect(player.animate).toHaveBeenCalledWith(63, 16);
     expect(enemy.animate).toHaveBeenCalledWith(
-      60,
+      63,
       16,
       canvas.height,
       canvas.width,
@@ -158,7 +159,7 @@ describe('ScreenDom', () => {
     player.getBase.mockReturnValue(base);
     enemy.animate.mockReturnValue([]);
 
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
 
     const drawImage = context.drawImage as jest.Mock;
     const fillRect = context.fillRect as jest.Mock;
@@ -183,11 +184,11 @@ describe('ScreenDom', () => {
     player.getBase.mockReturnValue(base);
     enemy.animate.mockReturnValue([screenElement]);
 
-    screen.animate(true, 60, 16, 200);
+    screen.animate(true, FrameTiming.between(16, 0), 200);
 
-    expect(player.animate).toHaveBeenCalledWith(60, 16);
+    expect(player.animate).toHaveBeenCalledWith(63, 16);
     expect(enemy.animate).toHaveBeenCalledWith(
-      60,
+      63,
       16,
       canvas.height,
       canvas.width,

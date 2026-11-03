@@ -54,8 +54,7 @@ export default class Game {
     this.updateDefeatedState();
     this.screen.animate(
       this.lifecycle.isRunning(),
-      frameTiming.framesPerSecond,
-      frameTiming.millisecondsSincePreviousFrame,
+      frameTiming,
       this.dashboard.getRadarAnouncementDisplayTime(),
     );
     this.dashboard.animate(
