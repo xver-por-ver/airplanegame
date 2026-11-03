@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import Game from '../../src/Game';
+import { PlayerDom } from '../../src/Player/Infrastructure/Dom/PlayerDom';
 import { resetDocument } from '../DomDocumentInit';
 
 describe('Game lifecycle integration', () => {
@@ -45,19 +46,24 @@ describe('Game lifecycle integration', () => {
       .spyOn(HTMLCanvasElement.prototype, 'getContext')
       .mockReturnValue(context);
     const canvas = document.getElementById('game') as HTMLCanvasElement;
-    jest.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
-      width: 1023.5,
-      height: 657.5,
-      top: 0,
+    let canvasRect = {
+      width: 800.5,
+      height: 514.5,
+      top: 80,
       left: 0,
-      bottom: 657.5,
-      right: 1023.5,
+      bottom: 594.5,
+      right: 800.5,
       x: 0,
-      y: 0,
+      y: 80,
       toJSON: () => {},
-    } as DOMRect);
+    } as DOMRect;
+    jest
+      .spyOn(canvas, 'getBoundingClientRect')
+      .mockImplementation(() => canvasRect);
+    const playerFly = jest.spyOn(PlayerDom.prototype, 'fly');
 
     new Game();
+    expect(playerFly).toHaveBeenCalledWith(1024, 329, 658);
     const nextFrame = (timestamp: number): void => {
       const callback = animationFrames.shift();
       if (!callback) {
@@ -87,14 +93,26 @@ describe('Game lifecycle integration', () => {
       configurable: true,
       value: 800,
     });
+    canvasRect = {
+      width: 1023.5,
+      height: 657.5,
+      top: 40,
+      left: 0,
+      bottom: 697.5,
+      right: 1023.5,
+      x: 0,
+      y: 40,
+      toJSON: () => {},
+    } as DOMRect;
     window.dispatchEvent(new Event('resize'));
     expect(container.innerHTML).toContain('PLAY');
 
     click('gameStartButton');
     expect(overlay.style.visibility).toBe('hidden');
     canvas.dispatchEvent(
-      new MouseEvent('mousemove', { bubbles: true, clientY: 320 }),
+      new MouseEvent('mousemove', { bubbles: true, clientY: 368.75 }),
     );
+    expect(playerFly).toHaveBeenLastCalledWith(1024, 329, 658);
     nextFrame(16);
     expect(context.fillRect).toHaveBeenCalled();
 

@@ -56,10 +56,10 @@ describe('PlayerControlsDom', () => {
   });
 
   test('constructor calls player.fly with initial canvas center', () => {
-    expect(player.fly).toHaveBeenCalledWith(300, 75, 150);
+    expect(player.fly).toHaveBeenCalledWith(1024, 329, 658);
   });
 
-  test('rounds fractional canvas bounds for initial position and steering', () => {
+  test('uses integer canvas coordinates with fractional display bounds', () => {
     canvas.getBoundingClientRect = jest.fn(() => ({
       width: 300.5,
       height: 150.5,
@@ -73,13 +73,47 @@ describe('PlayerControlsDom', () => {
     })) as unknown as () => DOMRect;
 
     new PlayerControlsDom(screen, player, events);
-    expect(player.fly).toHaveBeenLastCalledWith(301, 76, 151);
+    expect(player.fly).toHaveBeenLastCalledWith(1024, 329, 658);
 
     events.emit('game.started', undefined);
     canvas.dispatchEvent(
       new MouseEvent('mousemove', { bubbles: true, clientY: 52 }),
     );
-    expect(player.fly).toHaveBeenLastCalledWith(301, 42, 151);
+    expect(player.fly).toHaveBeenLastCalledWith(1024, 184, 658);
+  });
+
+  test('maps steering through the current canvas bounds after resize', () => {
+    let rect = {
+      width: 200,
+      height: 100,
+      top: 10,
+      left: 0,
+      bottom: 110,
+      right: 200,
+      x: 0,
+      y: 10,
+      toJSON: () => {},
+    } as DOMRect;
+    canvas.getBoundingClientRect = jest.fn(() => rect);
+    new PlayerControlsDom(screen, player, events);
+
+    events.emit('game.started', undefined);
+    rect = {
+      width: 400,
+      height: 200,
+      top: 20,
+      left: 0,
+      bottom: 220,
+      right: 400,
+      x: 0,
+      y: 20,
+      toJSON: () => {},
+    } as DOMRect;
+    canvas.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientY: 120 }),
+    );
+
+    expect(player.fly).toHaveBeenLastCalledWith(1024, 329, 658);
   });
 
   test('PLAY publishes a start request', () => {
@@ -141,7 +175,7 @@ describe('PlayerControlsDom', () => {
     );
 
     expect(player.fire).toHaveBeenCalledTimes(1);
-    expect(player.fly).toHaveBeenLastCalledWith(300, 42, 150);
+    expect(player.fly).toHaveBeenLastCalledWith(1024, 184, 658);
 
     events.emit('game.paused', { blockers: ['user-pause'] });
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' }));
