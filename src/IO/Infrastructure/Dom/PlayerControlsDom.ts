@@ -7,6 +7,8 @@ import { ScreenDom } from './ScreenDom';
 
 export class PlayerControlsDom implements PlayerControlsInterface {
   private readonly canvasRect: DOMRect;
+  private readonly canvasWidth: number;
+  private readonly canvasHeight: number;
   private gameCanRun: boolean = false;
   private userRequestedPause: boolean = false;
   private readonly dom: Dom;
@@ -18,6 +20,8 @@ export class PlayerControlsDom implements PlayerControlsInterface {
   ) {
     this.dom = new Dom();
     this.canvasRect = this.screen.getCanvas().getBoundingClientRect();
+    this.canvasWidth = Math.round(this.canvasRect.width);
+    this.canvasHeight = Math.round(this.canvasRect.height);
     this.events.on('game.started', () => {
       this.gameCanRun = true;
     });
@@ -42,9 +46,9 @@ export class PlayerControlsDom implements PlayerControlsInterface {
       this.mouseDownEvent.bind(this),
     );
     this.player.fly(
-      this.canvasRect.width,
-      Math.round(this.canvasRect.height / 2),
-      this.canvasRect.height,
+      this.canvasWidth,
+      Math.round(this.canvasHeight / 2),
+      this.canvasHeight,
     );
   }
 
@@ -82,7 +86,7 @@ export class PlayerControlsDom implements PlayerControlsInterface {
 
   private fly(y: number): void {
     if (this.animateScreen()) {
-      this.player.fly(this.canvasRect.width, y, this.canvasRect.height);
+      this.player.fly(this.canvasWidth, y, this.canvasHeight);
     }
   }
 

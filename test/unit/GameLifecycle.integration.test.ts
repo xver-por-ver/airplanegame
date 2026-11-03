@@ -44,6 +44,18 @@ describe('Game lifecycle integration', () => {
     jest
       .spyOn(HTMLCanvasElement.prototype, 'getContext')
       .mockReturnValue(context);
+    const canvas = document.getElementById('game') as HTMLCanvasElement;
+    jest.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
+      width: 1023.5,
+      height: 657.5,
+      top: 0,
+      left: 0,
+      bottom: 657.5,
+      right: 1023.5,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    } as DOMRect);
 
     new Game();
     const nextFrame = (timestamp: number): void => {
@@ -80,7 +92,11 @@ describe('Game lifecycle integration', () => {
 
     click('gameStartButton');
     expect(overlay.style.visibility).toBe('hidden');
+    canvas.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientY: 320 }),
+    );
     nextFrame(16);
+    expect(context.fillRect).toHaveBeenCalled();
 
     window.dispatchEvent(new Event('blur'));
     expect(container.innerHTML).toContain('Help Menu');

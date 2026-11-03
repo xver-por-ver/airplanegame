@@ -59,6 +59,29 @@ describe('PlayerControlsDom', () => {
     expect(player.fly).toHaveBeenCalledWith(300, 75, 150);
   });
 
+  test('rounds fractional canvas bounds for initial position and steering', () => {
+    canvas.getBoundingClientRect = jest.fn(() => ({
+      width: 300.5,
+      height: 150.5,
+      top: 10,
+      left: 0,
+      bottom: 0,
+      right: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    })) as unknown as () => DOMRect;
+
+    new PlayerControlsDom(screen, player, events);
+    expect(player.fly).toHaveBeenLastCalledWith(301, 76, 151);
+
+    events.emit('game.started', undefined);
+    canvas.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientY: 52 }),
+    );
+    expect(player.fly).toHaveBeenLastCalledWith(301, 42, 151);
+  });
+
   test('PLAY publishes a start request', () => {
     const startRequested = jest.fn();
     events.on('game.startRequested', startRequested);
