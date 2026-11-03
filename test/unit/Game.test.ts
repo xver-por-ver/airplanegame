@@ -7,6 +7,8 @@ import { EnemyDom } from '../../src/Enemy/Infrastructure/Dom/EnemyDom';
 import { PlayerDom } from '../../src/Player/Infrastructure/Dom/PlayerDom';
 import { MenuDom } from '../../src/IO/Infrastructure/Dom/MenuDom';
 import { HitDom } from '../../src/Hit/Infrastructure/Dom/HitDom';
+import { EventBusInterface } from '../../src/IO/Domain/EventBusInterface';
+import { GameEvents } from '../../src/IO/Domain/GameEventsInterface';
 
 jest.mock('../../src/IO/Infrastructure/Dom/PlayerControlsDom');
 jest.mock('../../src/IO/Infrastructure/Dom/ScreenDom');
@@ -16,10 +18,18 @@ jest.mock('../../src/Player/Infrastructure/Dom/PlayerDom');
 jest.mock('../../src/IO/Infrastructure/Dom/MenuDom');
 jest.mock('../../src/Hit/Infrastructure/Dom/HitDom');
 
+const eventBusFromGame = (): EventBusInterface<GameEvents> =>
+  (MenuDom as jest.Mock).mock.calls[0][0] as EventBusInterface<GameEvents>;
+
 describe('Game', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(false);
     window.requestAnimationFrame = jest.fn(() => 0);
+    (
+      DashboardDom.prototype.getRadarAnouncementDisplayTime as jest.Mock
+    ).mockReturnValue(200);
+    (MenuDom.prototype.gameOverDisplayed as jest.Mock).mockReturnValue(false);
     new Game();
   });
 
@@ -33,85 +43,153 @@ describe('Game', () => {
     expect(PlayerControlsDom).toHaveBeenCalledTimes(1);
   });
 
-  test('should wire shared dependencies into dashboard, hit, screen and controls', () => {
+  test('creates one event bus and injects it into lifecycle participants', () => {
+    const events = eventBusFromGame();
     const player = (PlayerDom as jest.Mock).mock.instances[0];
     const enemy = (EnemyDom as jest.Mock).mock.instances[0];
-    const dashboard = (DashboardDom as jest.Mock).mock.instances[0];
     const screen = (ScreenDom as jest.Mock).mock.instances[0];
     const hit = (HitDom as jest.Mock).mock.instances[0];
 
-    expect(DashboardDom).toHaveBeenCalledWith(player, enemy);
+    expect(DashboardDom).toHaveBeenCalledWith(player, enemy, events);
     expect(HitDom).toHaveBeenCalledWith(player, enemy);
-    expect(ScreenDom).toHaveBeenCalledWith(player, enemy, hit);
-    expect(PlayerControlsDom).toHaveBeenCalledWith(screen, player, dashboard);
+    expect(ScreenDom).toHaveBeenCalledWith(player, enemy, hit, events);
+    expect(MenuDom).toHaveBeenCalledWith(events);
+    expect(PlayerControlsDom).toHaveBeenCalledWith(screen, player, events);
   });
 
   test('should call requestAnimationFrame on instantiation', () => {
     expect(window.requestAnimationFrame).toHaveBeenCalledTimes(1);
   });
 
-  test('should call animate on screen and dashboard when animation frame is called', () => {
-    (PlayerControlsDom.prototype.animateScreen as jest.Mock).mockReturnValue(true);
-    (MenuDom.prototype.gameOverDisplayed as jest.Mock).mockReturnValue(false);
-    const animate = (window.requestAnimationFrame as jest.Mock).mock.calls[0][0] as (time: number) => void;
-    animate(0);
-    expect(ScreenDom.prototype.animate).toHaveBeenCalledTimes(1);
-    expect(DashboardDom.prototype.animate).toHaveBeenCalledTimes(1);
-    expect(MenuDom.prototype.animate).toHaveBeenCalledTimes(1);
+  test('ignores repeated start requests', () => {
+    const events = eventBusFromGame();
+    const started = jest.fn();
+    events.on('game.started', started);
+
+    events.emit('game.startRequested', undefined);
+    events.emit('game.startRequested', undefined);
+
+    expect(started).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not start after the player is defeated', () => {
+    const events = eventBusFromGame();
+    const started = jest.fn();
+    events.on('game.started', started);
+    (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(true);
+
+    events.emit('game.startRequested', undefined);
+
+    expect(started).not.toHaveBeenCalled();
+  });
+
+  test('starts paused when a window blocker is already active', () => {
+    const events = eventBusFromGame();
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: false,
+    });
+    const paused = jest.fn();
+    events.on('game.paused', paused);
+
+    events.emit('game.startRequested', undefined);
+
+    expect(paused).toHaveBeenCalledWith({ blockers: ['minimum-resolution'] });
+  });
+
+  test('runs only after the start request and pauses when a blocker appears', () => {
+    const events = eventBusFromGame();
+    events.emit('game.startRequested', undefined);
+    const userPauseEvents: Array<{ blockers: string[] }> = [];
+    events.on('game.paused', ({ blockers }) =>
+      userPauseEvents.push({ blockers }),
+    );
+    events.emit('game.userPauseChanged', { paused: true });
+
+    const animate = (window.requestAnimationFrame as jest.Mock).mock
+      .calls[0][0] as (time: number) => void;
+    animate(16);
+
+    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(
+      false,
+      63,
+      16,
+      200,
+    );
+    expect(DashboardDom.prototype.animate).toHaveBeenCalledWith(false, 16);
+    expect(userPauseEvents).toEqual([{ blockers: ['user-pause'] }]);
     expect(window.requestAnimationFrame).toHaveBeenCalledTimes(2);
   });
 
-  test('should stop requesting animation frames when game has ended', () => {
-    (MenuDom.prototype.gameOverDisplayed as jest.Mock).mockReturnValue(true);
-    (PlayerControlsDom.prototype.animateScreen as jest.Mock).mockReturnValue(true);
-    const animate = (window.requestAnimationFrame as jest.Mock).mock.calls[0][0] as (time: number) => void;
+  test('does not resume until every active blocker clears', () => {
+    const events = eventBusFromGame();
+    const transitions: string[] = [];
+    events.on('game.paused', () => transitions.push('paused'));
+    events.on('game.resumed', () => transitions.push('resumed'));
+    events.emit('game.startRequested', undefined);
+    events.emit('window.availabilityChanged', {
+      focused: false,
+      meetsMinimumResolution: true,
+    });
+    events.emit('game.userPauseChanged', { paused: true });
+    events.emit('gameplay.holdChanged', { active: true, reason: 'base-hit' });
+
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: true,
+    });
+    events.emit('game.userPauseChanged', { paused: false });
+    expect(transitions).toEqual(['paused']);
+
+    events.emit('gameplay.holdChanged', { active: false, reason: 'base-hit' });
+    expect(transitions).toEqual(['paused', 'resumed']);
+  });
+
+  test('continues requesting frames until the game-over delay elapses', () => {
+    const events = eventBusFromGame();
+    events.emit('game.startRequested', undefined);
+    (MenuDom.prototype.gameOverDisplayed as jest.Mock).mockReturnValue(false);
+    const animate = (window.requestAnimationFrame as jest.Mock).mock
+      .calls[0][0] as (time: number) => void;
     animate(16);
 
+    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(true, 63, 16, 200);
+    expect(DashboardDom.prototype.animate).toHaveBeenCalledWith(true, 16);
+    expect(MenuDom.prototype.animate).toHaveBeenCalledWith(16);
+    expect(window.requestAnimationFrame).toHaveBeenCalledTimes(2);
+  });
+
+  test('publishes defeat once and stops gameplay animation', () => {
+    const events = eventBusFromGame();
+    events.emit('game.startRequested', undefined);
+    const defeated = jest.fn();
+    events.on('game.defeated', defeated);
+    (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(true);
+    const animate = (window.requestAnimationFrame as jest.Mock).mock
+      .calls[0][0] as (time: number) => void;
+
+    animate(16);
+    animate(32);
+
+    expect(defeated).toHaveBeenCalledTimes(1);
+    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(
+      false,
+      63,
+      16,
+      200,
+    );
+  });
+
+  test('propagates a lifecycle listener error and does not schedule another frame', () => {
+    const events = eventBusFromGame();
+    events.on('game.defeated', () => {
+      throw new Error('game-over listener failed');
+    });
+    (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(true);
+    const animate = (window.requestAnimationFrame as jest.Mock).mock
+      .calls[0][0] as (time: number) => void;
+
+    expect(() => animate(16)).toThrow('game-over listener failed');
     expect(window.requestAnimationFrame).toHaveBeenCalledTimes(1);
-  });
-
-  test('should compute timing and pass correct values to screen, dashboard and menu', () => {
-    (PlayerControlsDom.prototype.animateScreen as jest.Mock).mockReturnValue(true);
-    (PlayerControlsDom.prototype.getGameInitiated as jest.Mock).mockReturnValue(true);
-    (DashboardDom.prototype.getPaused as jest.Mock).mockReturnValue(false);
-    (DashboardDom.prototype.getRadarAnouncementDisplayTime as jest.Mock).mockReturnValue(200);
-    (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(false);
-
-    const animate = (window.requestAnimationFrame as jest.Mock).mock.calls[0][0] as (time: number) => void;
-    animate(100);
-
-    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(true, 10, 100, 200);
-    expect(DashboardDom.prototype.animate).toHaveBeenCalledWith(true, 100);
-    expect(MenuDom.prototype.animate).toHaveBeenCalledWith(100, true, true, false, false);
-  });
-
-  test('should update timing from the previous animation frame timestamp', () => {
-    (PlayerControlsDom.prototype.animateScreen as jest.Mock).mockReturnValue(true);
-
-    const animate = (window.requestAnimationFrame as jest.Mock).mock.calls[0][0] as (time: number) => void;
-    animate(100);
-    animate(125);
-
-    expect(ScreenDom.prototype.animate).toHaveBeenNthCalledWith(1, true, 10, 100, 200);
-    expect(ScreenDom.prototype.animate).toHaveBeenNthCalledWith(2, true, 40, 25, 200);
-    expect(DashboardDom.prototype.animate).toHaveBeenNthCalledWith(2, true, 25);
-  });
-
-  test('should query control state for each animate branch', () => {
-    (PlayerControlsDom.prototype.animateScreen as jest.Mock).mockReturnValue(false);
-    (PlayerControlsDom.prototype.getGameInitiated as jest.Mock).mockReturnValue(true);
-    (DashboardDom.prototype.getPaused as jest.Mock).mockReturnValue(false);
-    (PlayerDom.prototype.defeated as jest.Mock).mockReturnValue(false);
-
-    const animate = (window.requestAnimationFrame as jest.Mock).mock.calls[0][0] as (time: number) => void;
-    animate(50);
-
-    expect(PlayerControlsDom.prototype.animateScreen).toHaveBeenCalledTimes(3);
-    expect(PlayerControlsDom.prototype.getGameInitiated).toHaveBeenCalledTimes(1);
-    expect(DashboardDom.prototype.getPaused).toHaveBeenCalledTimes(1);
-    expect(PlayerDom.prototype.defeated).toHaveBeenCalledTimes(1);
-    expect(ScreenDom.prototype.animate).toHaveBeenCalledWith(false, 20, 50, 200);
-    expect(DashboardDom.prototype.animate).toHaveBeenCalledWith(false, 50);
-    expect(MenuDom.prototype.animate).toHaveBeenCalledWith(50, true, false, false, false);
   });
 });

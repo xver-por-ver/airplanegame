@@ -5,5 +5,4 @@ export interface ScreenInterface {
     millisecondsSinceLastAnimateCall: number,
     radarDisplayTime: number,
   ): void;
-  getPaused(): boolean;
 }

@@ -1,6 +1,8 @@
 import { EnemyDom } from '../../../../Enemy/Infrastructure/Dom/EnemyDom';
 import { PlayerDom } from '../../../../Player/Infrastructure/Dom/PlayerDom';
 import { DashboardInterface } from '../../../Domain/Dashboard/DashboardInterface';
+import { EventBusInterface } from '../../../Domain/EventBusInterface';
+import { GameEvents } from '../../../Domain/GameEventsInterface';
 import { Dom } from '../Dom';
 import { DashboardMagazineDom } from './DashboardMagazineDom';
 import { DashboardRadarDom } from './DashboardRadarDom';
@@ -14,10 +16,16 @@ export class DashboardDom implements DashboardInterface {
   constructor(
     private readonly player: PlayerDom,
     private readonly enemy: EnemyDom,
+    events: EventBusInterface<GameEvents>,
   ) {
     const dom = new Dom();
     this.dashboardMagazine = new DashboardMagazineDom(this.player, dom);
-    this.dashboardRadar = new DashboardRadarDom(this.player, this.enemy, dom);
+    this.dashboardRadar = new DashboardRadarDom(
+      this.player,
+      this.enemy,
+      dom,
+      events,
+    );
     this.dashboardScore = new DashboardScoreDom(this.player, dom);
   }
 
@@ -31,10 +39,6 @@ export class DashboardDom implements DashboardInterface {
       millisecondsSinceLastAnimateCall,
     );
     this.dashboardScore.animate();
-  }
-
-  public getPaused(): boolean {
-    return this.dashboardRadar.getPaused();
   }
 
   public getRadarAnouncementDisplayTime(): number {

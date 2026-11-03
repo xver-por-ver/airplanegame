@@ -1,80 +1,110 @@
 import { describe, expect, beforeEach, afterEach, test } from '@jest/globals';
 import { MenuDom } from '../../../../../src/IO/Infrastructure/Dom/MenuDom';
+import { EventBus } from '../../../../../src/IO/Infrastructure/EventBus';
+import { GameEvents } from '../../../../../src/IO/Domain/GameEventsInterface';
 import { resetDocument } from '../../../../DomDocumentInit';
 
 describe('MenuDom', () => {
-    let menu: MenuDom;
-    let overlay: HTMLElement;
-    let container: HTMLElement;
+  let menu: MenuDom;
+  let events: EventBus<GameEvents>;
+  let overlay: HTMLElement;
+  let container: HTMLElement;
 
-    beforeEach(() => {       
-        overlay = document.getElementById('infoOverlay') as HTMLElement;
-        container = document.getElementById('infoContainer') as HTMLElement;
+  beforeEach(() => {
+    overlay = document.getElementById('infoOverlay') as HTMLElement;
+    container = document.getElementById('infoContainer') as HTMLElement;
+    events = new EventBus<GameEvents>();
+    menu = new MenuDom(events);
+  });
 
-        menu = new MenuDom();
+  afterEach(() => {
+    resetDocument();
+  });
+
+  test('constructor shows welcome menu (PLAY) and makes overlay visible', () => {
+    expect(container.innerHTML).toContain('PLAY');
+    expect(overlay.style.visibility).toBe('visible');
+  });
+
+  test('shows the minimum-resolution message and restores welcome when available', () => {
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: false,
+    });
+    expect(container.innerHTML).toContain('1033 × 760');
+    expect(overlay.style.visibility).toBe('visible');
+
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: true,
+    });
+    expect(container.innerHTML).toContain('PLAY');
+  });
+
+  test('game.started closes the welcome menu', () => {
+    events.emit('game.started', undefined);
+
+    expect(overlay.style.visibility).toBe('hidden');
+  });
+
+  test('game.paused shows controls when a user or window blocks play', () => {
+    events.emit('game.started', undefined);
+    events.emit('game.paused', { blockers: ['user-pause'] });
+
+    expect(container.innerHTML).toContain('Help Menu');
+    expect(container.innerHTML).toContain('<th>Controls</th>');
+    expect(container.innerHTML).toContain('helpCloseButton');
+    expect(overlay.style.visibility).toBe('visible');
+  });
+
+  test('restores the pause menu when resolution recovers but a blocker remains', () => {
+    events.emit('game.started', undefined);
+    events.emit('game.paused', { blockers: ['user-pause'] });
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: false,
+    });
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: true,
     });
 
-    afterEach(() => {
-        resetDocument();
-    });
+    expect(container.innerHTML).toContain('Help Menu');
+    expect(overlay.style.visibility).toBe('visible');
+  });
 
-    test('constructor shows welcome menu (PLAY) and makes overlay visible', () => {
-        expect(container.innerHTML).toContain('PLAY');
-        expect(overlay.style.visibility).toBe('visible');
-    });
+  test('gameplay-only hold does not open the pause menu', () => {
+    events.emit('game.started', undefined);
+    events.emit('game.paused', { blockers: ['gameplay-hold'] });
 
-    test('animate with gameInitiated closes the welcome menu (hides overlay)', () => {
-        expect(overlay.style.visibility).toBe('visible');
+    expect(overlay.style.visibility).toBe('hidden');
+  });
 
-        menu.animate(16, true, true, false, false);
-        expect(overlay.style.visibility).toBe('hidden');
-    });
+  test('game.resumed closes the pause menu', () => {
+    events.emit('game.started', undefined);
+    events.emit('game.paused', { blockers: ['window-blur'] });
 
-    test('pause menu shows updated controls table and close button', () => {
-        menu.closeMenu();
+    events.emit('game.resumed', undefined);
 
-        menu.animate(16, false, false, false, false);
+    expect(overlay.style.visibility).toBe('hidden');
+  });
 
-        expect(container.innerHTML).toContain('Help Menu');
-        expect(container.innerHTML).toContain('<th>Controls</th>');
-        expect(container.innerHTML).toContain('<th>Description</th>');
-        expect(container.innerHTML).toContain('<td>Shift key or left mouse click</td>');
-        expect(container.innerHTML).toContain('<td>Fire missile</td>');
-        expect(container.innerHTML).toContain('<td>P key</td>');
-        expect(container.innerHTML).toContain('<td>Pause/unpause</td>');
-        expect(container.innerHTML).toContain('<td>Mouse move</td>');
-        expect(container.innerHTML).toContain('<td>Move airplane</td>');
-        expect(container.innerHTML).not.toContain('Arrow up key');
-        expect(container.innerHTML).not.toContain('Arrow down key');
-        expect(container.innerHTML).toContain('helpCloseButton');
-        expect(overlay.style.visibility).toBe('visible');
-    });
+  test('game-over menu is displayed after the delay following defeat', () => {
+    events.emit('game.started', undefined);
+    events.emit('game.defeated', undefined);
 
-    test('pause menu closes when animateScreen becomes true', () => {
-        menu.closeMenu();
-        menu.animate(16, false, false, false, false);
+    menu.animate(1000);
+    expect(menu.gameOverDisplayed()).toBe(false);
+    expect(overlay.style.visibility).toBe('hidden');
 
-        menu.animate(16, false, true, false, false);
+    menu.animate(1000);
+    expect(menu.gameOverDisplayed()).toBe(false);
+    expect(overlay.style.visibility).toBe('hidden');
 
-        expect(overlay.style.visibility).toBe('hidden');
-    });
-
-    test('game over menu is displayed after delay when defeated is true', () => {
-        menu.closeMenu();
-        expect(overlay.style.visibility).toBe('hidden');
-
-        menu.animate(1000, false, true, false, true);
-        expect(menu.gameOverDisplayed()).toBe(false);
-        expect(overlay.style.visibility).toBe('hidden');
-
-        menu.animate(1000, false, true, false, true);
-        expect(menu.gameOverDisplayed()).toBe(false);
-        expect(overlay.style.visibility).toBe('hidden');
-
-        menu.animate(1000, false, true, false, true);
-        expect(menu.gameOverDisplayed()).toBe(true);
-        expect(container.innerHTML).toContain('GAME OVER');
-        expect(container.innerHTML).toContain('PLAY AGAIN');
-        expect(overlay.style.visibility).toBe('visible');
-    });
+    menu.animate(1000);
+    expect(menu.gameOverDisplayed()).toBe(true);
+    expect(container.innerHTML).toContain('GAME OVER');
+    expect(container.innerHTML).toContain('PLAY AGAIN');
+    expect(overlay.style.visibility).toBe('visible');
+  });
 });

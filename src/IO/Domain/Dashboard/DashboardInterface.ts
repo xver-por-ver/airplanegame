@@ -3,6 +3,5 @@ export interface DashboardInterface {
     animateScreen: boolean,
     millisecondsSinceLastAnimateCall: number,
   ): void;
-  getPaused(): boolean;
   getRadarAnouncementDisplayTime(): number;
 }

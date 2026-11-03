@@ -1,5 +1,7 @@
 import { EnemyDom } from '../../../../Enemy/Infrastructure/Dom/EnemyDom';
 import { PlayerDom } from '../../../../Player/Infrastructure/Dom/PlayerDom';
+import { EventBusInterface } from '../../../Domain/EventBusInterface';
+import { GameEvents } from '../../../Domain/GameEventsInterface';
 import { DashboardRadarInterface } from '../../../Domain/Dashboard/DashboardRadarInterface';
 import { Dom } from '../Dom';
 
@@ -9,12 +11,13 @@ export class DashboardRadarDom implements DashboardRadarInterface {
   private displayActivated: boolean = false;
   private readonly displayTime: number = 2000;
   private displayDeactivationTimeout: number = this.displayTime;
-  private pause: boolean = false;
+  private gameplayHoldActive: boolean = false;
 
   constructor(
     private readonly player: PlayerDom,
     private readonly enemy: EnemyDom,
     private readonly dom: Dom,
+    private readonly events: EventBusInterface<GameEvents>,
   ) {
     this.radarImage = this.dom.getElementById('radarImg');
     this.radarMsg = this.dom.getElementById('radarMsg');
@@ -43,12 +46,8 @@ export class DashboardRadarDom implements DashboardRadarInterface {
         this.player.getBase().getSpritePosition(),
         this.player.getBase().getRadarMessage(),
       );
-      this.pause = true;
+      this.setGameplayHold(true);
     }
-  }
-
-  public getPaused(): boolean {
-    return this.pause;
   }
 
   private displayActivate(backgroundPosition: string, message: string): void {
@@ -70,7 +69,7 @@ export class DashboardRadarDom implements DashboardRadarInterface {
   ): void {
     if (
       this.displayActivated &&
-      (animateScreen || (false === animateScreen && this.pause))
+      (animateScreen || (false === animateScreen && this.gameplayHoldActive))
     ) {
       this.displayDeactivationTimeout -= millisecondsSinceLastAnimateCall;
       if (0 >= this.displayDeactivationTimeout) {
@@ -80,11 +79,22 @@ export class DashboardRadarDom implements DashboardRadarInterface {
   }
 
   private displayClear(): void {
-    this.pause = false;
+    this.setGameplayHold(false);
     this.displayActivated = false;
     this.dom
       .htmlElementStyle(this.radarImage, 'visibility', 'hidden')
       .innerHtml(this.radarMsg, '');
+  }
+
+  private setGameplayHold(active: boolean): void {
+    if (this.gameplayHoldActive === active) {
+      return;
+    }
+    this.gameplayHoldActive = active;
+    this.events.emit('gameplay.holdChanged', {
+      active,
+      reason: 'base-hit',
+    });
   }
 
   public getDisplayTime(): number {

@@ -1,139 +1,208 @@
-import { describe, expect, beforeEach, afterEach, test, jest } from '@jest/globals';
+import {
+  describe,
+  expect,
+  beforeEach,
+  afterEach,
+  test,
+  jest,
+} from '@jest/globals';
 import { PlayerControlsDom } from '../../../../../src/IO/Infrastructure/Dom/PlayerControlsDom';
+import { EventBus } from '../../../../../src/IO/Infrastructure/EventBus';
+import { GameEvents } from '../../../../../src/IO/Domain/GameEventsInterface';
 import { resetDocument } from '../../../../DomDocumentInit';
 
 describe('PlayerControlsDom', () => {
-    let canvas: HTMLCanvasElement;
-    let screen: any;
-    let player: any;
-    let dashboard: any;
-    let controls: PlayerControlsDom;
-    let startBtn: HTMLElement;
-    let helpButton: HTMLElement;
+  let canvas: HTMLCanvasElement;
+  let screen: any;
+  let player: any;
+  let events: EventBus<GameEvents>;
+  let controls: PlayerControlsDom;
+  let startBtn: HTMLElement;
+  let helpButton: HTMLElement;
 
-    beforeEach(() => {
-        canvas = document.getElementById('game') as HTMLCanvasElement;
-        canvas.getBoundingClientRect = jest.fn(() => ({
-            width: 300,
-            height: 150,
-            top: 10,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            x: 0,
-            y: 0,
-            toJSON: () => {},
-        })) as unknown as () => DOMRect;
+  beforeEach(() => {
+    canvas = document.getElementById('game') as HTMLCanvasElement;
+    canvas.getBoundingClientRect = jest.fn(() => ({
+      width: 300,
+      height: 150,
+      top: 10,
+      left: 0,
+      bottom: 0,
+      right: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    })) as unknown as () => DOMRect;
 
-        screen = {
-            getCanvas: () => canvas,
-            getPaused: jest.fn(() => false),
-        };
+    screen = { getCanvas: () => canvas };
+    player = {
+      fly: jest.fn(),
+      fire: jest.fn(),
+      defeated: jest.fn(() => false),
+    };
+    events = new EventBus<GameEvents>();
 
-        player = {
-            fly: jest.fn(),
-            fire: jest.fn(),
-            defeated: jest.fn(() => false),
-        };
+    startBtn = document.createElement('div');
+    startBtn.id = 'gameStartButton';
+    document.body.appendChild(startBtn);
+    helpButton = document.getElementById('helpButton') as HTMLElement;
 
-        dashboard = {
-            getPaused: jest.fn(() => false),
-        };
+    controls = new PlayerControlsDom(screen, player, events);
+  });
 
-        startBtn = document.createElement('div');
-        startBtn.id = 'gameStartButton';
-        document.body.appendChild(startBtn);
+  afterEach(() => {
+    resetDocument();
+    jest.clearAllMocks();
+  });
 
-        helpButton = document.getElementById('helpButton') as HTMLElement;
+  test('constructor calls player.fly with initial canvas center', () => {
+    expect(player.fly).toHaveBeenCalledWith(1024, 329, 658);
+  });
 
-        controls = new PlayerControlsDom(screen, player, dashboard);
-        jest.clearAllMocks();
-    });
+  test('uses integer canvas coordinates with fractional display bounds', () => {
+    canvas.getBoundingClientRect = jest.fn(() => ({
+      width: 300.5,
+      height: 150.5,
+      top: 10,
+      left: 0,
+      bottom: 0,
+      right: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    })) as unknown as () => DOMRect;
 
-    afterEach(() => {
-        resetDocument();
-        jest.clearAllMocks();
-    });
+    new PlayerControlsDom(screen, player, events);
+    expect(player.fly).toHaveBeenLastCalledWith(1024, 329, 658);
 
-    test('constructor calls player.fly with initial canvas center', () => {
-        const canvas2 = document.createElement('canvas');
-        (canvas2 as any).getBoundingClientRect = jest.fn(() => ({
-            width: 300,
-            height: 150,
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            x: 0,
-            y: 0,
-            toJSON: () => {},
-        })) as unknown as () => DOMRect;
-        const screen2 = { getCanvas: () => canvas2, getPaused: jest.fn(() => false) };
-        const player2 = { fly: jest.fn(), fire: jest.fn(), defeated: jest.fn(() => false) };
-        const dashboard2 = { getPaused: jest.fn(() => false) };
+    events.emit('game.started', undefined);
+    canvas.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientY: 52 }),
+    );
+    expect(player.fly).toHaveBeenLastCalledWith(1024, 184, 658);
+  });
 
-        new PlayerControlsDom(screen2 as any, player2 as any, dashboard2 as any);
-        expect(player2.fly).toHaveBeenCalledWith(300, Math.round(150 / 2), 150);
-    });
+  test('maps steering through the current canvas bounds after resize', () => {
+    let rect = {
+      width: 200,
+      height: 100,
+      top: 10,
+      left: 0,
+      bottom: 110,
+      right: 200,
+      x: 0,
+      y: 10,
+      toJSON: () => {},
+    } as DOMRect;
+    canvas.getBoundingClientRect = jest.fn(() => rect);
+    new PlayerControlsDom(screen, player, events);
 
-    test('mousedown on #gameStartButton sets gameInitiated', () => {
-        startBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-        expect(controls.getGameInitiated()).toBe(true);
-    });
+    events.emit('game.started', undefined);
+    rect = {
+      width: 400,
+      height: 200,
+      top: 20,
+      left: 0,
+      bottom: 220,
+      right: 400,
+      x: 0,
+      y: 20,
+      toJSON: () => {},
+    } as DOMRect;
+    canvas.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientY: 120 }),
+    );
 
-    test('mousedown on #helpButton pauses animation', () => {
-        startBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    expect(player.fly).toHaveBeenLastCalledWith(1024, 329, 658);
+  });
 
-        helpButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+  test('PLAY publishes a start request', () => {
+    const startRequested = jest.fn();
+    events.on('game.startRequested', startRequested);
 
-        expect(controls.animateScreen()).toBe(false);
-    });
+    startBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
 
-    test('mousedown on #helpCloseButton unpauses animation', () => {
-        startBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-        helpButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    expect(startRequested).toHaveBeenCalledWith(undefined);
+    expect(controls.animateScreen()).toBe(false);
+  });
 
-        const helpCloseButton = document.createElement('a');
-        helpCloseButton.id = 'helpCloseButton';
-        document.body.appendChild(helpCloseButton);
+  test('controls permit gameplay only after lifecycle events allow it', () => {
+    events.emit('game.started', undefined);
+    expect(controls.animateScreen()).toBe(true);
 
-        helpCloseButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    events.emit('game.paused', { blockers: ['user-pause'] });
+    expect(controls.animateScreen()).toBe(false);
 
-        expect(controls.animateScreen()).toBe(true);
-    });
+    events.emit('game.resumed', undefined);
+    expect(controls.animateScreen()).toBe(true);
 
-    test('mousedown elsewhere calls player.fire when animateScreen is true', () => {
-        startBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-        player.fire.mockClear();
-        document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-        expect(player.fire).toHaveBeenCalled();
-    });
+    events.emit('game.defeated', undefined);
+    expect(controls.animateScreen()).toBe(false);
+  });
 
-    test('keydown "Shift" triggers player.fire when animateScreen is true', () => {
-        startBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-        player.fire.mockClear();
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' }));
-        expect(player.fire).toHaveBeenCalled();
-    });
+  test('help controls publish explicit user-pause state changes', () => {
+    const pauseChanges: boolean[] = [];
+    events.on('game.userPauseChanged', ({ paused }) =>
+      pauseChanges.push(paused),
+    );
 
-    test('keydown "p" toggles userRequestedPause', () => {
-        startBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-        expect(controls.animateScreen()).toBe(true);
+    helpButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    const helpCloseButton = document.createElement('a');
+    helpCloseButton.id = 'helpCloseButton';
+    document.body.appendChild(helpCloseButton);
+    helpCloseButton.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true }),
+    );
 
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p' }));
-        expect(controls.animateScreen()).toBe(false);
+    expect(pauseChanges).toEqual([true, false]);
+  });
 
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p' }));
-        expect(controls.animateScreen()).toBe(true);
-    });
+  test('mousedown elsewhere fires only while lifecycle allows gameplay', () => {
+    events.emit('game.started', undefined);
+    document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    expect(player.fire).toHaveBeenCalledTimes(1);
 
-    test('mousemove on canvas calls player.fly with computed y when animateScreen is true', () => {
-        startBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-        player.fly.mockClear();
+    events.emit('game.paused', { blockers: ['window-blur'] });
+    document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    expect(player.fire).toHaveBeenCalledTimes(1);
+  });
 
-        const pageY = 10 + 42;
-        canvas.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: pageY }));
+  test('Shift fires and mouse movement steers only while gameplay can run', () => {
+    events.emit('game.started', undefined);
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' }));
+    canvas.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientY: 52 }),
+    );
 
-        expect(player.fly).toHaveBeenCalledWith(300, 42, 150);
-    });
+    expect(player.fire).toHaveBeenCalledTimes(1);
+    expect(player.fly).toHaveBeenLastCalledWith(1024, 184, 658);
+
+    events.emit('game.paused', { blockers: ['user-pause'] });
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' }));
+    expect(player.fire).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not emit when the user-pause state is unchanged', () => {
+    const pauseChanges: boolean[] = [];
+    events.on('game.userPauseChanged', ({ paused }) =>
+      pauseChanges.push(paused),
+    );
+
+    helpButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    helpButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+    expect(pauseChanges).toEqual([true]);
+  });
+
+  test('P toggles an explicit user-pause state', () => {
+    const pauseChanges: boolean[] = [];
+    events.on('game.userPauseChanged', ({ paused }) =>
+      pauseChanges.push(paused),
+    );
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p' }));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p' }));
+
+    expect(pauseChanges).toEqual([true, false]);
+  });
 });

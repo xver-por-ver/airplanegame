@@ -1,69 +1,93 @@
 * {
+    box-sizing: border-box;
     user-select: none;
 }
 
-html, body {
+:root {
+    color-scheme: dark;
+    --ink: #071217;
+    --panel: #101f24;
+    --panel-edge: #294047;
+    --signal: #b9e35b;
+    --signal-dim: #77963b;
+    --amber: #e6a84e;
+    --paper: #dce6d9;
+}
+
+html,
+body {
+    width: 100%;
     height: 100%;
     margin: 0;
 }
 
 body {
-    padding: 0;
-    box-sizing: border-box;
     overflow: hidden;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 16px;
-    width: 100%;
-    height: 100%;
-    background-color: black;
+    background: var(--ink);
+    color: var(--paper);
+    font: 15px/1.4 'Trebuchet MS', 'Segoe UI', sans-serif;
 }
 
 div#app {
-    height: 100%;
     width: 100%;
+    height: 100%;
     display: flex;
     flex-flow: column nowrap;
     justify-content: space-between;
     align-items: center;
+    background:
+        radial-gradient(ellipse at 50% 48%, rgba(41, 64, 71, .34), transparent 62%),
+        repeating-linear-gradient(0deg, transparent 0 39px, rgba(185, 227, 91, .025) 40px);
 }
 
 div#menu {
+    z-index: 1;
+    flex: 0 0 76px;
     width: 100%;
-    height: 76px;
-    padding: 0;
-    margin: 0;
-    box-sizing: content-box;
+    padding: 0 clamp(12px, 3vw, 38px);
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
-    text-align: center;
     align-items: center;
-    background-image: url(/img/menuBg.png);
-    border-bottom: 4px solid #12d912;
+    gap: clamp(8px, 2vw, 24px);
+    background: linear-gradient(180deg, #15272c, #0c191e);
+    border-bottom: 1px solid var(--panel-edge);
+    box-shadow: 0 5px 22px rgba(0, 0, 0, .32);
+}
+
+div#menu div#menuScore,
+div#menu div#menuRounds,
+div#menu div#menuRadar {
+    min-height: 46px;
+    border: 1px solid var(--panel-edge);
+    border-radius: 5px;
+    background: rgba(4, 13, 17, .78);
 }
 
 div#menu div#menuScore {
-    margin-left: 20px;
-    background-color: black;
-    padding: 6px;
-    color: #12d912;
-    border-radius: 20px;
-    border: 4px solid #12d912;
-    height: 22px;
-    min-width: 180px;
+    min-width: 174px;
+    padding: 0 14px;
     display: flex;
-    flex-flow: row nowrap;
+    align-items: center;
     justify-content: space-between;
+    gap: 14px;
+    color: #9baea9;
+}
+
+div#menu div#menuScore #score {
+    color: var(--signal);
+    font-size: 21px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
 
 div#menu div#menuRounds {
-    background-color: black;
-    padding: 6px;
-    color: #9b5811;
-    border-radius: 20px;
-    border: 4px solid #9b5811;
     width: 150px;
-    height: 22px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--amber);
 }
 
 div#menu div#menuRounds .magazine {
@@ -71,40 +95,32 @@ div#menu div#menuRounds .magazine {
 }
 
 div#menu div#menuRadar {
+    width: min(300px, 34vw);
+    height: 52px;
+    padding: 2px 10px;
     display: flex;
     flex-flow: row nowrap;
     justify-content: flex-end;
     align-items: center;
-    border-radius: 20px;
-    border: 4px solid #12d912;
-    width: 300px;
-    height: 52px;
-    background: black;
-    padding: 2px 10px;
 }
 
 div#menu div#menuRadar div#radarMsg {
     flex-grow: 1;
-    color: #bd1111;
+    color: var(--amber);
     text-align: center;
     font-size: 12px;
 }
 
 div#menu div#menuRadar div#radarImg {
-    flex-grow: 0;
-    margin: auto;
-    display: block;
+    flex: 0 0 55px;
     height: 50px;
-    width: 55px;
-    background-image: url(/img/Sprite.png);
-    padding: 0;
     margin: 0;
-    border: none;
+    background-image: url(/img/Sprite.png);
     visibility: hidden;
 }
 
 div#menu div#menuHelp {
-    margin-right: 20px;
+    margin: 0;
     display: flex;
     align-items: center;
 }
@@ -112,147 +128,203 @@ div#menu div#menuHelp {
 div#menu div#menuHelp a#helpButton,
 div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 2px solid #12d912;
-    background-color: #12d912;
-    color: black;
+    padding: 9px 17px;
+    border: 1px solid var(--signal-dim);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--signal);
     font-size: 12px;
-    font-weight: bold;
-    letter-spacing: 0.08em;
+    font-weight: 700;
+    letter-spacing: .08em;
     text-decoration: none;
+    transition: background-color .16s ease, color .16s ease;
+}
+
+div#menu div#menuHelp a#helpButton:hover,
+div#menu div#menuHelp a#helpButton:focus-visible,
+div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton:hover,
+div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton:focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 3px;
+    background: var(--signal);
+    color: var(--ink);
 }
 
 div#body {
-    display: block;
-    overflow: hidden;
     width: 100%;
     height: 100%;
-    padding-bottom: 24px;
+    min-height: 0;
+    overflow: hidden;
 }
 
 div#body canvas#game {
-    background-color: #020511;
-    border-radius: 20px;
     position: relative;
     top: 50%;
     left: 50%;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 116px);
+    border: 1px solid var(--signal-dim);
+    border-radius: 3px;
+    background-color: #020511;
+    box-shadow: 0 0 0 5px rgba(185, 227, 91, .055), 0 18px 55px rgba(0, 0, 0, .55);
     transform: translate(-50%, -50%);
-    border: 4px solid #12d912;
-    box-sizing: border-box;
     cursor: crosshair;
 }
 
 div#footer {
     position: fixed;
-    bottom: 0px;
+    right: 0;
+    bottom: 0;
     width: 100%;
+    padding: 5px 12px;
+    border-top: 1px solid var(--panel-edge);
+    background: #091519;
+    color: #71827e;
+    font-size: 11px;
     text-align: center;
-    padding: 4px 0;
-    font-size: 0.8em;
-    border-top: 4px solid #12d912;
-    background-color: black;
-    color: white;
+}
+
+div#footer a {
+    color: #a7c76b;
 }
 
 div#infoOverlay {
     z-index: 998;
     position: absolute;
-    height: 100%;
-    width: 100%;
-    background: rgba(51, 48, 48, 0.9);
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(2, 9, 12, .86);
     visibility: hidden;
-    top: 0px;
-    left: 0px;
-    margin: 0;
-    padding: 0;
 }
 
 div#infoOverlay div#infoContainer {
     z-index: 999;
-    position: absolute;
-    min-height: 740px;
-    min-width: 1032px;
-    width: 50%;
-    height: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: black;
-    border-radius: 40px;
-    color: #12d912;
-    font-size: 2vmax;
+    position: relative;
+    width: min(720px, calc(100vw - 32px));
+    height: min(540px, calc(100vh - 48px));
+    min-width: 0;
+    min-height: 0;
+    padding: 32px;
+    overflow: auto;
+    border: 1px solid var(--signal-dim);
+    border-radius: 6px;
+    background: #0b171b;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .6);
+    color: var(--paper);
+    font-size: clamp(15px, 1.2vw, 18px);
 }
 
 div#infoOverlay div#infoContainer p {
     position: absolute;
-    margin: 0;
     top: 50%;
     left: 50%;
+    margin: 0;
     transform: translate(-50%, -50%);
     text-align: center;
 }
 
 div#infoOverlay div#infoContainer div.helpMenu {
-    font-size: 1vmax;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(720px, 92%);
+    width: min(600px, 100%);
+    margin: 0 auto;
     text-align: center;
 }
 
 div#infoOverlay div#infoContainer div.helpMenu h2 {
     margin: 0 0 24px;
+    color: var(--signal);
+}
+
+div#infoOverlay div#infoContainer div.helpMenu p {
+    position: static;
+    margin: 0;
+    transform: none;
+    line-height: 1.6;
 }
 
 div#infoOverlay div#infoContainer div.helpMenu table {
     width: 100%;
-    border-collapse: collapse;
     margin-bottom: 24px;
+    border-collapse: collapse;
 }
 
 div#infoOverlay div#infoContainer div.helpMenu th,
 div#infoOverlay div#infoContainer div.helpMenu td {
-    border: 2px solid #12d912;
     padding: 10px 14px;
+    border: 1px solid var(--panel-edge);
     text-align: left;
+}
+
+div#infoOverlay div#infoContainer div.helpMenu th {
+    color: var(--signal);
 }
 
 .errorContainer {
     position: absolute;
     top: 40%;
     left: 50%;
-    transform: translate(-50%, -30%);
     width: 100%;
-    color: #12d912;
+    color: var(--signal);
+    transform: translate(-50%, -30%);
 }
 
 .errorContainer .hugeMessage {
-    font-size: 14em;
-    text-align: center;
+    font-size: clamp(5rem, 22vw, 14rem);
     font-weight: bold;
-    text-shadow: 0 0 4px var(--color-light), 0 0 10px var(--color-light);
+    text-align: center;
+    text-shadow: 0 0 18px rgba(185, 227, 91, .3);
 }
 
 .errorContainer .hugeMessageDesc {
-    font-size: 2em;
-    text-align: center;
+    font-size: clamp(1rem, 3vw, 2rem);
     font-weight: bold;
-    text-shadow: 0 0 2px var(--color-light), 0 0 5px var(--color-light);
+    text-align: center;
 }
 
-/* Basic responsiveness */
-@media screen and (max-width: 800px),
-        screen and (max-height: 600px) {
-    body {
-        font-size: 1.5vmax;
+@media (max-width: 620px) {
+    div#menu {
+        flex-basis: 64px;
+        padding: 0 10px;
+        gap: 6px;
+    }
+
+    div#menu div#menuScore {
+        min-width: 0;
+        padding: 0 8px;
+        gap: 7px;
+        font-size: 12px;
+    }
+
+    div#menu div#menuScore #score {
+        font-size: 16px;
+    }
+
+    div#menu div#menuRounds {
+        width: auto;
+        min-width: 68px;
+        padding: 0 7px;
+        font-size: 12px;
+    }
+
+    div#menu div#menuRadar {
+        display: none;
+    }
+
+    div#menu div#menuHelp a#helpButton {
+        padding: 8px 10px;
+    }
+
+    div#body canvas#game {
+        max-height: calc(100vh - 104px);
+    }
+
+    div#infoOverlay div#infoContainer {
+        padding: 24px 18px;
     }
 }
 
-@media screen and (max-width: 600px) {
-    #menuScore, #menuRounds, #menuRadar, #menuHelp {
-        visibility: hidden;
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        transition-duration: .01ms !important;
     }
 }
