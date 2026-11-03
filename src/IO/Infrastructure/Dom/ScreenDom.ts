@@ -18,7 +18,7 @@ export class ScreenDom implements ScreenInterface {
   private lastPublishedWindowFocus: boolean = true;
   private readonly background = new ScrollingBackgroundDom();
   private readonly shake = new ScreenShakeDom(this);
-  private shakeInitiate: boolean = false;
+  private shakeInitialize: boolean = false;
 
   constructor(
     private readonly player: PlayerDom,
@@ -40,17 +40,15 @@ export class ScreenDom implements ScreenInterface {
     screenAnimate: boolean,
     repaintRatePerSecond: number,
     millisecondsSinceLastAnimateCall: number,
-    radarDisplayTime: number,
+    radarAnouncementDuration: number,
   ): void {
-    if (true === this.shakeInitiate) {
-      this.shake.startShake(
-        this.player.getBase().getHealth(),
-        radarDisplayTime,
-      );
-      this.shakeInitiate = false;
-    } else {
-      this.shake.animate(millisecondsSinceLastAnimateCall);
-    }
+    this.shake.animate(
+      this.shakeInitialize,
+      millisecondsSinceLastAnimateCall,
+      radarAnouncementDuration,
+      this.player.getBase().getHealth(),
+    );
+    this.shakeInitialize = false;
     if (false === screenAnimate) {
       return;
     }
@@ -62,7 +60,7 @@ export class ScreenDom implements ScreenInterface {
       millisecondsSinceLastAnimateCall,
     );
     this.hit.hasHits(this.canvas.width);
-    this.shakeInitiate = this.player.getBase().radarAnnounce();
+    this.shakeInitialize = this.player.getBase().radarAnnounce();
   }
 
   public getCanvas(): HTMLCanvasElement {

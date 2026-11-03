@@ -1,4 +1,8 @@
 export interface ScreenShakeInterface {
-  startShake(remainingBaseHealth: number, radarDisplayTime: number): void;
-  animate(millisecondsSinceLastAnimateCall: number): void;
+  animate(
+    initialize: boolean,
+    millisecondsSinceLastAnimateCall: number,
+    shakeTime: number,
+    t: number,
+  ): void;
 }

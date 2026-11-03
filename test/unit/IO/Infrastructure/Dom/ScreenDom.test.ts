@@ -130,6 +130,7 @@ describe('ScreenDom', () => {
   );
 
   test('should skip drawing when animation is disabled', () => {
+    player.getBase.mockReturnValue(new BaseDom());
     screen.animate(false, 60, 16, 200);
     expect(player.animate).not.toHaveBeenCalled();
     expect(enemy.animate).not.toHaveBeenCalled();

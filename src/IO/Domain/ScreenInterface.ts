@@ -3,6 +3,6 @@ export interface ScreenInterface {
     screenAnimate: boolean,
     repaintRatePerSecond: number,
     millisecondsSinceLastAnimateCall: number,
-    radarDisplayTime: number,
+    radarAnouncementDuration: number,
   ): void;
 }
