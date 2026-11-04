@@ -12,11 +12,12 @@
     "game:devbuild": "webpack --config webpack.config.cjs --mode=development",
     "game:devwatch": "webpack --config webpack.config.cjs --mode=development --watch",
     "game:probuild": "webpack --config webpack.config.cjs --mode=production",
-    "server:build": "rm -rf dist && tsc -p tsconfig.server.json && node -e \"require('node:fs').writeFileSync('dist/package.json', '{\\n  \\\"type\\\": \\\"commonjs\\\"\\n}\\n')\"",
+    "server:build": "tsc -p tsconfig.server.json",
     "server:start": "node dist/Server.js",
     "server:watch": "tsc -p tsconfig.server.json -w & nodemon -q -w dist dist/Server.js",
     "build": "npm run game:probuild && npm run server:build",
-    "start": "npm run server:start"
+    "start": "npm run build && npm run server:start",
+    "ci": "npm run format:check && npm run test:coverage && npm run game:probuild && npm run server:build"
   },
   "license": "ISC",
   "devDependencies": {
@@ -45,5 +46,9 @@
     "@opentelemetry/sdk-node": "^0.300.0",
     "@opentelemetry/semantic-conventions": "^1.37.0",
     "express": "^5.1.0"
+  },
+  "allowScripts": {
+    "protobufjs": false,
+    "@parcel/watcher": false
   }
 }

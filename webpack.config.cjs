@@ -1,10 +1,10 @@
-const path = require('path');
+const path = require('node:path');
 const fs = require('node:fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const releaseApp = process.env.RELEASE_APP ?? 'DEV';
 
-var config = {
+const config = {
   entry: './src/App.ts',
   module: {
     rules: [
@@ -46,14 +46,14 @@ var config = {
   ]
 };
 
-module.exports = (env, argv) => {
+const webpackConfig = (env, argv) => {
   if (argv.mode === 'development') {
     config.devtool = 'eval-source-map';
   }
 
-  if (argv.mode === 'production') {
-    
-  }
+  // if (argv.mode === 'production') {}
 
   return config;
 };
+
+module.exports = webpackConfig;

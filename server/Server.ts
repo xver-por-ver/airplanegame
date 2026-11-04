@@ -1,7 +1,7 @@
 import {
   sdk,
   setSpanAttributes,
-} from './Observability/Infrastructure/Instrumentation';
+} from './Observability/Infrastructure/Instrumentation.js';
 import { SpanKind, SpanStatusCode, trace, type Span } from '@opentelemetry/api';
 import express, {
   type Express,
@@ -11,6 +11,7 @@ import express, {
 } from 'express';
 import http, { type Server } from 'http';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 sdk.start();
 
@@ -25,6 +26,7 @@ const shutdownGraceMs = Number.parseInt(
 );
 const app: Express = express();
 const activeRequests = new Set<http.IncomingMessage>();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const documentRoot = path.resolve(__dirname, '..', 'public');
 
 let isReady = true;
