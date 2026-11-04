@@ -56,12 +56,16 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
     return screenElementsToPaint;
   }
 
-  public fly(x: number, y: number, screenHeight: number): void {
-    const xPosition = x - (this.screenElement.getDimension().getWidth() + 10);
-    const bottomLimit =
-      screenHeight - (this.screenElement.getDimension().getHeight() + 8);
-    const adjustedPosition = y - (this.verticalCenter + 6);
-    const yPosition = Math.max(0, Math.min(bottomLimit, adjustedPosition));
+  public fly(x: number, y: number, canvasHeight: number): void {
+    const xPosition = x - this.screenElement.getDimension().getWidth();
+    const topLimit: number = 0 - this.verticalCenter
+    const bottomLimit: number = canvasHeight - this.verticalCenter;
+    let yPosition = y - this.verticalCenter;
+    if (y < topLimit) {
+      yPosition = topLimit;
+    } else if (y > canvasHeight) {
+      yPosition = bottomLimit;
+    }
 
     this.screenElement.setPosition(xPosition, yPosition);
   }
@@ -75,7 +79,7 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
     ].setPosition(
       this.screenElement.getPosition().getPositionX(),
       Math.round(
-        this.screenElement.getPosition().getPositionY() + this.verticalCenter,
+        this.screenElement.getPosition().getPositionY() + this.verticalCenter - 6,
       ),
     );
     this.availableFireRounds--;

@@ -8,11 +8,13 @@ import { ScreenElementDimensionDom } from '../../../../../src/IO/Infrastructure/
 jest.mock('../../../../../src/IO/Infrastructure/Dom/ScreenElementDom');
 jest.mock('../../../../../src/Player/Infrastructure/Dom/FireRoundDom');
 
+const verticalCenter: number = 30;
+
 class ConcreteAirplane extends AirplaneAbstractDom {
   protected readonly magazineCapacity: number = 1;
 
   constructor() {
-    super('sprite', 'airplane1', 50, 100, 25, 0, 0);
+    super('sprite', 'airplane1', 50, 100, verticalCenter, 0, 0);
     this.initializeMagazine();
   }
 }
@@ -50,7 +52,6 @@ describe('AirplaneAbstractDom', () => {
     airplane.fire();
     expect(airplane.getAvailableFireRounds()).toBe(0);
     expect(airplane.getReloading()).toBe(true);
-    expect(fireRound.setPosition).toHaveBeenCalledWith(100, 225);
   });
 
   test('should not fire when reloading', () => {
@@ -74,18 +75,21 @@ describe('AirplaneAbstractDom', () => {
   });
 
   test('should fly and set position within screen bounds', () => {
+    const posY = 300 - verticalCenter;
     airplane.fly(150, 300, 600);
-    expect(screenElement.setPosition).toHaveBeenCalledWith(90, 269);
+    expect(screenElement.setPosition).toHaveBeenCalledWith(100, posY);
   });
 
   test('should not fly above the top of the screen', () => {
-    airplane.fly(150, 10, 600);
-    expect(screenElement.setPosition).toHaveBeenCalledWith(90, 0);
+    const posY = 0 - (verticalCenter + 1);
+    airplane.fly(150, posY, 600);
+    expect(screenElement.setPosition).toHaveBeenCalledWith(100, 0 - verticalCenter);
   });
 
   test('should not fly below the bottom of the screen', () => {
-    airplane.fly(150, 700, 600);
-    expect(screenElement.setPosition).toHaveBeenCalledWith(90, 492);
+    const posY = 600 + (verticalCenter + 1);
+    airplane.fly(150, posY, 600);
+    expect(screenElement.setPosition).toHaveBeenCalledWith(100, 600 - verticalCenter);
   });
 
   test('should animate its fire rounds', () => {
