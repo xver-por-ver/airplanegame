@@ -224,6 +224,115 @@ div#infoOverlay div#infoContainer p {
     text-align: center;
 }
 
+#infoOverlay #infoContainer .welcomeMenu p {
+    position: static;
+    inset: auto;
+    margin: 0 0 16px;
+    transform: none;
+    text-align: left;
+}
+
+div#infoOverlay div#infoContainer div.welcomeMenu {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: clamp(20px, 4vw, 40px);
+    align-items: center;
+    min-height: 100%;
+    padding: clamp(8px, 3vw, 28px);
+    background: linear-gradient(110deg, rgba(15, 33, 39, .96), rgba(7, 18, 23, .97));
+}
+
+div#infoOverlay div#infoContainer div.welcomeCopy {
+    min-width: 0;
+}
+
+div#infoOverlay div#infoContainer aside.welcomeControls {
+    min-width: 0;
+}
+
+div#infoOverlay div#infoContainer div.welcomeCopy .welcomeKicker {
+    position: static;
+    margin: 0 0 18px;
+    color: var(--amber);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-align: left;
+    transform: none;
+}
+
+div#infoOverlay div#infoContainer div.welcomeCopy h1 {
+    margin: 0;
+    color: var(--paper);
+    font-size: clamp(42px, 7vw, 76px);
+    line-height: .98;
+    letter-spacing: -.055em;
+}
+
+div#infoOverlay div#infoContainer div.welcomeCopy .welcomeText {
+    position: static;
+    max-width: 390px;
+    margin: 22px 0 30px;
+    color: #a9bbb5;
+    line-height: 1.65;
+    text-align: left;
+    transform: none;
+}
+
+div#infoOverlay div#infoContainer a#gameStartButton {
+    display: inline-block;
+    padding: 13px 26px;
+    border: 1px solid var(--signal);
+    background: var(--signal);
+    color: var(--ink);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+div#infoOverlay div#infoContainer a#gameStartButton:hover,
+div#infoOverlay div#infoContainer a#gameStartButton:focus-visible {
+    outline: 3px solid var(--paper);
+    outline-offset: 4px;
+    background: #d4f48a;
+}
+
+div#infoOverlay div#infoContainer aside.welcomeControls {
+    padding-left: clamp(18px, 3vw, 32px);
+    border-left: 1px solid var(--panel-edge);
+}
+
+div#infoOverlay div#infoContainer aside.welcomeControls h2 {
+    margin: 0 0 22px;
+    color: var(--signal);
+    font-size: 19px;
+}
+
+div#infoOverlay div#infoContainer aside.welcomeControls p {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 14px 0;
+    color: #a9bbb5;
+    text-align: left;
+    transform: none;
+}
+
+div#infoOverlay div#infoContainer kbd {
+    padding: 4px 7px;
+    border: 1px solid #496067;
+    border-radius: 3px;
+    background: #13262c;
+    color: var(--paper);
+    font: inherit;
+    font-size: 12px;
+}
+
+div#infoOverlay div#infoContainer aside.welcomeControls p span {
+    padding-left: 12px;
+    font-size: 13px;
+}
+
 div#infoOverlay div#infoContainer div.helpMenu {
     width: min(600px, 100%);
     margin: 0 auto;
@@ -281,6 +390,19 @@ div#infoOverlay div#infoContainer div.helpMenu th {
     text-align: center;
 }
 
+@media (max-width: 720px) {
+    div#infoOverlay div#infoContainer div.welcomeMenu {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    div#infoOverlay div#infoContainer aside.welcomeControls {
+        padding: 18px 0 0;
+        border-top: 1px solid var(--panel-edge);
+        border-left: 0;
+    }
+}
+
 @media (max-width: 620px) {
     div#menu {
         flex-basis: 64px;
@@ -319,7 +441,23 @@ div#infoOverlay div#infoContainer div.helpMenu th {
     }
 
     div#infoOverlay div#infoContainer {
-        padding: 24px 18px;
+        padding: 18px 14px;
+    }
+
+    div#infoOverlay div#infoContainer div.welcomeMenu {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 12px 4px;
+    }
+
+    div#infoOverlay div#infoContainer aside.welcomeControls {
+        padding: 18px 0 0;
+        border-top: 1px solid var(--panel-edge);
+        border-left: 0;
+    }
+
+    div#infoOverlay div#infoContainer aside.welcomeControls h2 {
+        margin-bottom: 12px;
     }
 }
 
