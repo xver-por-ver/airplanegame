@@ -336,7 +336,46 @@ div#infoOverlay div#infoContainer aside.welcomeControls p span {
 div#infoOverlay div#infoContainer div.helpMenu {
     width: min(600px, 100%);
     margin: 0 auto;
+    padding: clamp(20px, 4vw, 36px);
+    border-left: 3px solid var(--signal);
+    background: linear-gradient(110deg, rgba(15, 33, 39, .96), rgba(7, 18, 23, .97));
+    text-align: left;
+}
+
+div#infoOverlay div#infoContainer div.helpMenu h2 {
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--panel-edge);
+}
+
+div#infoOverlay div#infoContainer div.missionEnd {
     text-align: center;
+}
+
+div#infoOverlay div#infoContainer div.missionEnd p {
+    margin: 0 0 26px;
+    color: var(--amber);
+    font-size: clamp(30px, 6vw, 54px);
+    font-weight: 700;
+    letter-spacing: -.04em;
+}
+
+div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton,
+div#infoOverlay div#infoContainer div.missionEnd a {
+    display: inline-block;
+    padding: 11px 22px;
+    border: 1px solid var(--signal);
+    background: var(--signal);
+    color: var(--ink);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton:hover,
+div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton:focus-visible,
+div#infoOverlay div#infoContainer div.missionEnd a:hover,
+div#infoOverlay div#infoContainer div.missionEnd a:focus-visible {
+    outline: 3px solid var(--paper);
+    outline-offset: 3px;
 }
 
 div#infoOverlay div#infoContainer div.helpMenu h2 {

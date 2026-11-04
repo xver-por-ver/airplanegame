@@ -79,8 +79,9 @@ export class MenuDom implements MenuInterface {
         );
       case 'game-over':
         return (
-          '<p>GAME OVER<br /><a href="javascript:void(0);" ' +
-          'onclick="window.location.reload(true);">PLAY AGAIN</a></p>'
+          '<div class="helpMenu missionEnd"><p>GAME OVER</p>' +
+          '<a href="javascript:void(0);" ' +
+          'onclick="window.location.reload(true);">PLAY AGAIN</a></div>'
         );
     }
   }
