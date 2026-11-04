@@ -1,4 +1,6 @@
 import { EnemyDom } from '../../../../Enemy/Infrastructure/Dom/EnemyDom';
+import { MissileAbstractDom } from '../../../../Enemy/Infrastructure/Dom/MissileAbstractDom';
+import { MissileAtomicDom } from '../../../../Enemy/Infrastructure/Dom/MissileAtomicDom';
 import { PlayerDom } from '../../../../Player/Infrastructure/Dom/PlayerDom';
 import { EventBusInterface } from '../../../Domain/EventBusInterface';
 import { GameEvents } from '../../../Domain/GameEventsInterface';
@@ -31,10 +33,7 @@ export class DashboardRadarDom implements DashboardRadarInterface {
       animateScreen,
       millisecondsSinceLastAnimateCall,
     );
-    if (
-      true === animateScreen &&
-      true === this.player.getBase().atomicMissileDetection(this.enemy)
-    ) {
+    if (true === animateScreen && true === this.atomicMissileDetection()) {
       this.displayActivate('-90px -89px', '<p>ATOMIC MISILE APPROACHING</p>');
     }
 
@@ -48,6 +47,20 @@ export class DashboardRadarDom implements DashboardRadarInterface {
       );
       this.setGameplayHold(true);
     }
+  }
+
+  private atomicMissileDetection(): boolean {
+    const missile = this.enemy
+      .getLaunchedMissiles()
+      .find(
+        (candidate: MissileAbstractDom): candidate is MissileAtomicDom =>
+          candidate instanceof MissileAtomicDom && candidate.radarAnnounce(),
+      );
+    if (undefined === missile) {
+      return false;
+    }
+    missile.unsetRadarAnnounce();
+    return true;
   }
 
   private displayActivate(backgroundPosition: string, message: string): void {

@@ -1,6 +1,3 @@
-import { EnemyDom } from '../../../Enemy/Infrastructure/Dom/EnemyDom';
-import { MissileAbstractDom } from '../../../Enemy/Infrastructure/Dom/MissileAbstractDom';
-import { MissileAtomicDom } from '../../../Enemy/Infrastructure/Dom/MissileAtomicDom';
 import { BaseInterface } from '../../Domain/BaseInterface';
 
 export class BaseDom implements BaseInterface {
@@ -49,19 +46,6 @@ export class BaseDom implements BaseInterface {
 
   public getHealth(): number {
     return this.health;
-  }
-
-  public atomicMissileDetection(enemy: EnemyDom): boolean {
-    const found = enemy
-      .getLaunchedMissiles()
-      .find((missile: MissileAbstractDom) => {
-        if (missile instanceof MissileAtomicDom && missile.radarAnnounce()) {
-          missile.unsetRadarAnnounce();
-          return true;
-        }
-        return false;
-      });
-    return undefined !== found;
   }
 
   public baseHit(): boolean {

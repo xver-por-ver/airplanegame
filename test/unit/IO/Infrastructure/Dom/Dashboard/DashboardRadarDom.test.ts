@@ -23,7 +23,6 @@ const createBaseDomMock = (
   ({
     applyDamage: jest.fn<() => void>(),
     radarAnnounce: jest.fn<() => boolean>().mockReturnValue(false),
-    atomicMissileDetection: jest.fn<() => boolean>().mockReturnValue(false),
     baseHit: jest.fn<() => boolean>().mockReturnValue(false),
     getSpritePosition: jest.fn<() => string>(),
     getRadarMessage: jest.fn<() => string>(),
@@ -49,6 +48,9 @@ describe('DashboardRadarDom', () => {
 
     player = new PlayerDom() as jest.Mocked<PlayerDom>;
     enemy = new EnemyDom() as jest.Mocked<EnemyDom>;
+    enemy.getLaunchedMissiles = jest
+      .fn<() => MissileAbstractDom[]>()
+      .mockReturnValue([]);
     dom = new Dom();
     events = new EventBus<GameEvents>();
 
@@ -93,7 +95,6 @@ describe('DashboardRadarDom', () => {
 
     const base = createBaseDomMock({
       radarAnnounce: jest.fn<() => boolean>().mockReturnValue(false),
-      atomicMissileDetection: jest.fn<() => boolean>().mockReturnValue(true),
     });
 
     player.getBase = jest.fn<() => BaseDom>().mockReturnValue(base);
@@ -102,6 +103,7 @@ describe('DashboardRadarDom', () => {
 
     expect(radarImg.style.getPropertyValue('visibility')).toBe('visible');
     expect(radarMsg.innerHTML).toBe('<p>ATOMIC MISILE APPROACHING</p>');
+    expect(missileAtomic.radarAnnounce()).toBe(false);
   });
 
   test('should handle base hit when player is defeated', () => {
@@ -132,15 +134,10 @@ describe('DashboardRadarDom', () => {
       .fn<() => MissileAbstractDom[]>()
       .mockReturnValue([missileAtomic]);
 
-    const base = createBaseDomMock({
-      atomicMissileDetection: jest.fn<() => boolean>().mockReturnValue(true),
-    });
+    const base = createBaseDomMock();
     player.getBase = jest.fn<() => BaseDom>().mockReturnValue(base);
 
     dashboardRadar.animate(true, 200);
-    base.atomicMissileDetection = jest
-      .fn<() => boolean>()
-      .mockReturnValue(false);
     dashboardRadar.animate(true, 2000);
 
     expect(radarImg.style.getPropertyValue('visibility')).toBe('hidden');
@@ -199,15 +196,14 @@ describe('DashboardRadarDom', () => {
 
   describe('displayActivationControl', () => {
     test('should decrease timeout when display is activated and screen is animated', () => {
-      const base = createBaseDomMock({
-        atomicMissileDetection: jest.fn<() => boolean>().mockReturnValue(true),
-      });
+      const base = createBaseDomMock();
       player.getBase = jest.fn<() => BaseDom>().mockReturnValue(base);
+      const missile = new MissileAtomicDom('missileA2', 500);
+      enemy.getLaunchedMissiles = jest
+        .fn<() => MissileAbstractDom[]>()
+        .mockReturnValue([missile]);
       const initialTimeout = (dashboardRadar as any).displayDeactivationTimeout;
       dashboardRadar.animate(true, 0);
-      base.atomicMissileDetection = jest
-        .fn<() => boolean>()
-        .mockReturnValue(false);
       dashboardRadar.animate(true, 100);
       expect((dashboardRadar as any).displayDeactivationTimeout).toBeLessThan(
         initialTimeout,
@@ -230,7 +226,6 @@ describe('DashboardRadarDom', () => {
       const base = createBaseDomMock({
         radarAnnounce: jest.fn<() => boolean>().mockReturnValue(true),
         baseHit: jest.fn<() => boolean>().mockReturnValue(true),
-        atomicMissileDetection: jest.fn<() => boolean>().mockReturnValue(true),
         getSpritePosition: jest.fn<() => string>(),
         getRadarMessage: jest.fn<() => string>(),
       });
@@ -249,9 +244,12 @@ describe('DashboardRadarDom', () => {
     test('should call displayClear when timeout reaches zero', () => {
       const base = createBaseDomMock({
         radarAnnounce: jest.fn<() => boolean>().mockReturnValue(false),
-        atomicMissileDetection: jest.fn<() => boolean>().mockReturnValue(true),
       });
       player.getBase = jest.fn<() => BaseDom>().mockReturnValue(base);
+      const missile = new MissileAtomicDom('missileA3', 500);
+      enemy.getLaunchedMissiles = jest
+        .fn<() => MissileAbstractDom[]>()
+        .mockReturnValue([missile]);
       dashboardRadar.animate(true, 0);
 
       const initialTimeout = (dashboardRadar as any).displayDeactivationTimeout;
