@@ -22,11 +22,15 @@ export default class Game {
   private readonly lifecycle: GameLifecycle;
   private gameDefeated: boolean = false;
   private lastAnimateCallTimestamp: number = 0;
+  private resetFrameTiming: boolean = false;
 
   constructor() {
     this.events = new EventBus<GameEvents>();
     this.lifecycle = new GameLifecycle(this.events);
     this.events.on('game.startRequested', () => this.startGame());
+    this.events.on('game.resumed', () => {
+      this.resetFrameTiming = true;
+    });
     this.player = new PlayerDom();
     this.enemy = new EnemyDom();
 
@@ -45,6 +49,11 @@ export default class Game {
   }
 
   private animate(timestamp: number): void {
+    const skipFrame = this.resetFrameTiming;
+    if (skipFrame) {
+      this.lastAnimateCallTimestamp = timestamp;
+      this.resetFrameTiming = false;
+    }
     const frameTiming = FrameTiming.between(
       timestamp,
       this.lastAnimateCallTimestamp,
@@ -53,12 +62,12 @@ export default class Game {
 
     this.updateDefeatedState();
     this.screen.animate(
-      this.lifecycle.isRunning(),
+      this.lifecycle.isRunning() && false === skipFrame,
       frameTiming,
       this.dashboard.getRadarAnouncementDisplayTime(),
     );
     this.dashboard.animate(
-      this.lifecycle.isRunning(),
+      this.lifecycle.isRunning() && false === skipFrame,
       frameTiming.millisecondsSincePreviousFrame,
     );
     this.updateDefeatedState();
