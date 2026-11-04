@@ -58,7 +58,7 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
 
   public fly(x: number, y: number, canvasHeight: number): void {
     const xPosition = x - this.screenElement.getDimension().getWidth();
-    const topLimit: number = 0 - this.verticalCenter
+    const topLimit: number = 0 - this.verticalCenter;
     const bottomLimit: number = canvasHeight - this.verticalCenter;
     let yPosition = y - this.verticalCenter;
     if (y < topLimit) {
@@ -79,7 +79,9 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
     ].setPosition(
       this.screenElement.getPosition().getPositionX(),
       Math.round(
-        this.screenElement.getPosition().getPositionY() + this.verticalCenter - 6,
+        this.screenElement.getPosition().getPositionY() +
+          this.verticalCenter -
+          6,
       ),
     );
     this.availableFireRounds--;
