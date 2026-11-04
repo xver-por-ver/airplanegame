@@ -129,6 +129,45 @@ describe('Game', () => {
     expect(window.requestAnimationFrame).toHaveBeenCalledTimes(2);
   });
 
+  test('discards the time spent paused when the game resumes', () => {
+    const events = eventBusFromGame();
+    events.emit('game.startRequested', undefined);
+    const firstFrame = (window.requestAnimationFrame as jest.Mock).mock
+      .calls[0][0] as (time: number) => void;
+    firstFrame(16);
+
+    events.emit('window.availabilityChanged', {
+      focused: false,
+      meetsMinimumResolution: true,
+    });
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: true,
+    });
+
+    const resumedFrame = (window.requestAnimationFrame as jest.Mock).mock
+      .calls[1][0] as (time: number) => void;
+    resumedFrame(60_000);
+
+    expect(DashboardDom.prototype.animate).toHaveBeenLastCalledWith(false, 0);
+    expect(ScreenDom.prototype.animate).toHaveBeenLastCalledWith(
+      false,
+      FrameTiming.between(60_000, 60_000),
+      200,
+    );
+
+    const nextFrame = (window.requestAnimationFrame as jest.Mock).mock
+      .calls[2][0] as (time: number) => void;
+    nextFrame(60_016);
+
+    expect(DashboardDom.prototype.animate).toHaveBeenLastCalledWith(true, 16);
+    expect(ScreenDom.prototype.animate).toHaveBeenLastCalledWith(
+      true,
+      FrameTiming.between(60_016, 60_000),
+      200,
+    );
+  });
+
   test('does not resume until every active blocker clears', () => {
     const events = eventBusFromGame();
     const transitions: string[] = [];
