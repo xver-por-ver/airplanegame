@@ -7,7 +7,6 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
   protected readonly magazineCapacity: number = 1;
   private readonly firedRounds: FireRoundDom[] = [];
   private availableFireRounds: number = 0;
-  private reloading: boolean = false;
   private readonly reloadTime: number = 1000; // millisedonds
   private timeTillReload: number = this.reloadTime;
 
@@ -46,7 +45,7 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
         screenElementsToPaint.push(fireRound.getScreenElement());
       }
     });
-    if (this.reloading) {
+    if (this.getReloading()) {
       this.timeTillReload -= millisecondsSinceLastAnimateCall;
       if (0 > this.timeTillReload) {
         this.timeTillReload = this.reloadTime;
@@ -67,7 +66,7 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
   }
 
   public fire(): void {
-    if (this.reloading) {
+    if (this.getReloading()) {
       return;
     }
     this.firedRounds[
@@ -79,7 +78,6 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
       ),
     );
     this.availableFireRounds--;
-    this.reloading = 0 === this.availableFireRounds;
   }
 
   protected initializeMagazine(): void {
@@ -91,7 +89,6 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
 
   public reloadMagazine(): void {
     this.availableFireRounds = this.magazineCapacity;
-    this.reloading = false;
   }
 
   public getAvailableFireRounds(): number {
@@ -99,7 +96,7 @@ export abstract class AirplaneAbstractDom implements AirplaneInterface {
   }
 
   public getReloading(): boolean {
-    return this.reloading;
+    return 0 === this.availableFireRounds;
   }
 
   public getFireRounds(): FireRoundDom[] {
