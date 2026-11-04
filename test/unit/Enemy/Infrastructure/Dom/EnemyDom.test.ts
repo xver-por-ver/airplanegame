@@ -31,6 +31,23 @@ describe('EnemyDom', () => {
     expect(MissileAtomicDom).toHaveBeenCalledTimes(1);
   });
 
+  test('should assign sequential missile identities deterministically', () => {
+    enemyDom.animate(60, 1500, screenHeight, screenWidth);
+    enemyDom.animate(60, 13500, screenHeight, screenWidth);
+
+    expect(MissileHydrogenDom).toHaveBeenNthCalledWith(
+      1,
+      'missile-1',
+      screenHeight,
+    );
+    expect(MissileHydrogenDom).toHaveBeenNthCalledWith(
+      2,
+      'missile-2',
+      screenHeight,
+    );
+    expect(MissileAtomicDom).toHaveBeenCalledWith('missile-3', screenHeight);
+  });
+
   test('should animate launched missiles', () => {
     const missile = new MissileHydrogenDom('1', screenHeight);
     const animateSpy = jest.spyOn(missile, 'animate');

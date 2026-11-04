@@ -14,6 +14,7 @@ export class EnemyDom implements EnemyInterface {
     this.missileAtomicRelaunchTime;
   private launchedMissiles: MissileAbstractDom[] = [];
   private explosions: ExplosionDom[] = [];
+  private nextEntityId: number = 1;
 
   public animate(
     repaintRatePerSecond: number,
@@ -21,20 +22,21 @@ export class EnemyDom implements EnemyInterface {
     screenHeight: number,
     screenWidth: number,
   ): ScreenElementDom[] {
-    this.timeTillNextMissileHydrogenLaunch = Math.round(
-      this.timeTillNextMissileHydrogenLaunch - millisecondsSinceLastAnimateCall,
-    );
-    this.timeTillNextMissileAtomicLaunch = Math.round(
-      this.timeTillNextMissileAtomicLaunch - millisecondsSinceLastAnimateCall,
-    );
-    if (this.timeTillNextMissileHydrogenLaunch <= 0)
+    this.timeTillNextMissileHydrogenLaunch -= millisecondsSinceLastAnimateCall;
+    this.timeTillNextMissileAtomicLaunch -= millisecondsSinceLastAnimateCall;
+    if (this.timeTillNextMissileHydrogenLaunch <= 0) {
       this.launchMissile(
-        new MissileHydrogenDom(Date.now().toString(), screenHeight),
+        new MissileHydrogenDom(this.nextId('missile'), screenHeight),
       );
-    if (this.timeTillNextMissileAtomicLaunch <= 0)
+      this.timeTillNextMissileHydrogenLaunch +=
+        this.missileHydrogenRelaunchTime;
+    }
+    if (this.timeTillNextMissileAtomicLaunch <= 0) {
       this.launchMissile(
-        new MissileAtomicDom(Date.now().toString(), screenHeight),
+        new MissileAtomicDom(this.nextId('missile'), screenHeight),
       );
+      this.timeTillNextMissileAtomicLaunch += this.missileAtomicRelaunchTime;
+    }
 
     const screenElementsToPaint: ScreenElementDom[] = [];
     this.launchedMissiles.forEach((missile: MissileAbstractDom) => {
@@ -54,14 +56,12 @@ export class EnemyDom implements EnemyInterface {
     return screenElementsToPaint;
   }
 
+  private nextId(entity: string): string {
+    return `${entity}-${this.nextEntityId++}`;
+  }
+
   private launchMissile(missile: MissileAbstractDom): void {
     this.launchedMissiles.push(missile);
-    if (missile instanceof MissileHydrogenDom) {
-      this.timeTillNextMissileHydrogenLaunch = this.missileHydrogenRelaunchTime;
-    }
-    if (missile instanceof MissileAtomicDom) {
-      this.timeTillNextMissileAtomicLaunch = this.missileAtomicRelaunchTime;
-    }
   }
 
   private cleanOffScreenMissiles(): void {
@@ -82,7 +82,7 @@ export class EnemyDom implements EnemyInterface {
   ): void {
     this.explosions.push(
       new ExplosionDom(
-        Date.now().toString(),
+        this.nextId('explosion'),
         missile.getDimension(),
         missile.getPosition(),
       ),
