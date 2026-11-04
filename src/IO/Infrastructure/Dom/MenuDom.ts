@@ -38,7 +38,23 @@ export class MenuDom implements MenuInterface {
   private getContent(view: Exclude<MenuView, 'hidden'>): string {
     switch (view) {
       case 'welcome':
-        return '<p><a href="javascript:void();" id="gameStartButton">PLAY</a></p>';
+        return (
+          '<div class="welcomeMenu">' +
+          '<div class="welcomeCopy">' +
+          '<p class="welcomeKicker">AIR DEFENSE / FIELD BRIEFING</p>' +
+          '<h1>Hold the line.</h1>' +
+          '<p class="welcomeText">Keep the base standing. Track incoming missiles, ' +
+          'move your aircraft, and fire before they reach the ground.</p>' +
+          '<a href="javascript:void();" id="gameStartButton">PLAY · Start mission</a>' +
+          '</div>' +
+          '<aside class="welcomeControls" aria-label="Controls">' +
+          '<h2>Controls</h2>' +
+          '<p><kbd>Mouse</kbd><span>Move aircraft</span></p>' +
+          '<p><kbd>Shift</kbd> or <kbd>Click</kbd><span>Fire missile</span></p>' +
+          '<p><kbd>P</kbd><span>Pause mission</span></p>' +
+          '</aside>' +
+          '</div>'
+        );
       case 'paused':
         return (
           '<div class="helpMenu">' +
@@ -63,8 +79,9 @@ export class MenuDom implements MenuInterface {
         );
       case 'game-over':
         return (
-          '<p>GAME OVER<br /><a href="javascript:void(0);" ' +
-          'onclick="window.location.reload(true);">PLAY AGAIN</a></p>'
+          '<div class="helpMenu missionEnd"><p>GAME OVER</p>' +
+          '<a href="javascript:void(0);" ' +
+          'onclick="window.location.reload(true);">PLAY AGAIN</a></div>'
         );
     }
   }
