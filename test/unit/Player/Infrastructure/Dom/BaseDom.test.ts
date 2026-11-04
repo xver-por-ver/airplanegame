@@ -20,6 +20,19 @@ describe('BaseDom', () => {
     expect(baseDom.getHealth()).toBe(2);
   });
 
+  test('should clamp health at zero and ignore damage after defeat', () => {
+    baseDom.applyDamage();
+    baseDom.applyDamage();
+    baseDom.applyDamage();
+    expect(baseDom.isDefeated()).toBe(true);
+    expect(baseDom.baseHit()).toBe(true);
+
+    baseDom.applyDamage();
+
+    expect(baseDom.getHealth()).toBe(0);
+    expect(baseDom.radarAnnounce()).toBe(false);
+  });
+
   test('should set pending radar announcement on applying damage', () => {
     baseDom.applyDamage();
     expect(baseDom.radarAnnounce()).toBe(true);

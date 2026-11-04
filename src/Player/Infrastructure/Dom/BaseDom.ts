@@ -8,8 +8,15 @@ export class BaseDom implements BaseInterface {
   private pendingHitAnnouncement: boolean = false;
 
   public applyDamage(): void {
+    if (this.isDefeated()) {
+      return;
+    }
     this.pendingHitAnnouncement = true;
     this.health--;
+  }
+
+  public isDefeated(): boolean {
+    return 0 === this.health;
   }
 
   public radarAnnounce(): boolean {

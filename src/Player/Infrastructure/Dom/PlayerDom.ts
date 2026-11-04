@@ -65,6 +65,6 @@ export class PlayerDom implements PlayerInterface {
   }
 
   public defeated(): boolean {
-    return 0 === this.base.getHealth();
+    return this.base.isDefeated();
   }
 }

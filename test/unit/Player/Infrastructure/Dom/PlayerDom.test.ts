@@ -59,13 +59,11 @@ describe('PlayerDom', () => {
     expect(playerDom.getScrore()).toBe(150);
   });
 
-  test('should be defeated when base health is zero', () => {
-    jest.spyOn(base, 'getHealth').mockReturnValue(0);
+  test('should delegate defeat status to the base', () => {
+    jest.spyOn(base, 'isDefeated').mockReturnValue(true);
     expect(playerDom.defeated()).toBe(true);
-  });
 
-  test('should not be defeated when base health is greater than zero', () => {
-    jest.spyOn(base, 'getHealth').mockReturnValue(100);
+    jest.spyOn(base, 'isDefeated').mockReturnValue(false);
     expect(playerDom.defeated()).toBe(false);
   });
 });
