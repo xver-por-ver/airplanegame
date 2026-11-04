@@ -26,7 +26,7 @@ export class PlayerControlsDom {
       this.canvasHeight,
     );
     this.dom.addEventListener(
-      this.screen.getCanvas(),
+      window,
       'mousemove',
       this.mouseMoveEvent.bind(this),
     );
