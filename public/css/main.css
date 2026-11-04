@@ -172,7 +172,7 @@ div#body canvas#game {
 }
 
 div#footer {
-    position: fixed;
+    position: relative;
     right: 0;
     bottom: 0;
     width: 100%;
