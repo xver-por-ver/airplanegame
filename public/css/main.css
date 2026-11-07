@@ -49,7 +49,7 @@ div#menu {
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
-    gap: clamp(8px, 2vw, 24px);
+    gap: 16px;
     background:
         linear-gradient(180deg, rgba(220, 230, 217, .06), transparent 70%),
         linear-gradient(180deg, #15272c, #0c191e);
@@ -60,10 +60,29 @@ div#menu {
 div#menu div#menuScore,
 div#menu div#menuRounds,
 div#menu div#menuRadar {
+    position: relative;
     min-height: 46px;
     border: 1px solid var(--panel-edge);
     border-radius: 5px;
     background: rgba(4, 13, 17, .78);
+    transition: background-color .16s ease, box-shadow .16s ease;
+}
+
+div#menu div#menuScore:hover,
+div#menu div#menuRounds:hover,
+div#menu div#menuRadar:hover {
+    background: rgba(12, 27, 30, .96);
+    box-shadow: 0 0 12px rgba(185, 227, 91, .12);
+}
+
+div#menu div#menuRounds::before,
+div#menu div#menuRadar::before,
+div#menu div#menuHelp::before {
+    position: absolute;
+    left: -9px;
+    height: 30px;
+    border-left: 1px solid rgba(185, 227, 91, .24);
+    content: '';
 }
 
 div#menu div#menuScore {
@@ -125,6 +144,7 @@ div#menu div#menuRadar div#radarImg {
 }
 
 div#menu div#menuHelp {
+    position: relative;
     margin: 0;
     display: flex;
     align-items: center;
@@ -160,6 +180,8 @@ div#body {
     height: 100%;
     min-height: 0;
     overflow: hidden;
+    background-image: radial-gradient(rgba(185, 227, 91, .14) 1px, transparent 1px);
+    background-size: 18px 18px;
 }
 
 div#body canvas#game {
