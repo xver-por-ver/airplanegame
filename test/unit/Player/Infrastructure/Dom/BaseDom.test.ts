@@ -37,9 +37,9 @@ describe('BaseDom', () => {
     baseDom.applyDamage(); // health = 2
     expect(baseDom.getSpritePosition()).toBe('-146px -89px');
     baseDom.applyDamage(); // health = 1
-    expect(baseDom.getSpritePosition()).toBe('-146px -140px');
+    expect(baseDom.getSpritePosition()).toBe('-146px -142px');
     baseDom.applyDamage(); // health = 0
-    expect(baseDom.getSpritePosition()).toBe('-90x -140px');
+    expect(baseDom.getSpritePosition()).toBe('-90x -142px');
   });
 
   test('should detect and clear an atomic missile announcement', () => {

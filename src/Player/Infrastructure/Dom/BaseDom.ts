@@ -22,10 +22,10 @@ export class BaseDom implements BaseInterface {
 
   public getSpritePosition(): string {
     if (1 === this.health) {
-      return '-146px -140px';
+      return '-146px -142px';
     }
     if (0 === this.health) {
-      return '-90x -140px';
+      return '-90x -142px';
     }
     return '-146px -89px';
   }
