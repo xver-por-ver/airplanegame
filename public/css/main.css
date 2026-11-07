@@ -88,14 +88,27 @@ div#menu div#menuHelp::before {
 }
 
 div#menu div#menuScore {
+    position: relative;
     border-top: 2px solid var(--signal);
     min-width: 174px;
     padding: 0 14px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 14px;
+    padding-top: 10px;
     color: #9baea9;
+}
+
+div#menu div#menuScore span:first-child {
+    position: absolute;
+    top: 3px;
+    left: 14px;
+    color: #82928c;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
 }
 
 div#menu div#menuScore #score {
@@ -106,6 +119,7 @@ div#menu div#menuScore #score {
 }
 
 div#menu div#menuRounds {
+    position: relative;
     border-top: 2px solid var(--amber);
     width: 150px;
     padding: 0 12px;
@@ -113,6 +127,25 @@ div#menu div#menuRounds {
     align-items: center;
     justify-content: center;
     color: var(--amber);
+    padding-top: 10px;
+}
+
+div#menu div#menuRounds::after,
+div#menu div#menuRadar::after {
+    position: absolute;
+    top: 3px;
+    color: #82928c;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .1em;
+}
+
+div#menu div#menuRounds::after {
+    content: 'ROUNDS';
+}
+
+div#menu div#menuRadar::after {
+    content: 'RADAR';
 }
 
 div#menu div#menuRounds .magazine {
@@ -120,6 +153,7 @@ div#menu div#menuRounds .magazine {
 }
 
 div#menu div#menuRadar {
+    position: relative;
     border-top: 2px solid var(--amber);
     width: min(300px, 34vw);
     height: 52px;
