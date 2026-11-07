@@ -166,7 +166,7 @@ div#body canvas#game {
     left: 50%;
     max-width: calc(100vw - 24px);
     max-height: calc(100vh - 116px);
-    border: 1px solid var(--signal-dim);
+    border: 1px solid #9dbd50;
     border-radius: 3px;
     background-color: #020511;
     box-shadow: 0 0 0 5px rgba(185, 227, 91, .055), 0 18px 55px rgba(0, 0, 0, .55);
