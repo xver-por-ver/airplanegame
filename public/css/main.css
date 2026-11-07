@@ -433,7 +433,12 @@ div#infoOverlay div#infoContainer div.missionEnd {
 }
 
 div#infoOverlay div#infoContainer div.missionEnd p {
-    margin: 0 0 26px;
+    position: static;
+    display: table;
+    margin: 0 auto 26px;
+    transform: none;
+    padding: 0 12px 12px;
+    border-bottom: 1px solid rgba(230, 168, 78, .2);
     color: var(--amber);
     font-size: clamp(30px, 6vw, 54px);
     font-weight: 700;
