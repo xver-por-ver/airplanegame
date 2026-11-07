@@ -44,7 +44,9 @@ export class MenuPresentation {
       }
       if (this.resolutionWarningOpen) {
         this.resolutionWarningOpen = false;
-        if (!this.gameStarted) {
+        if (this.gameDefeated && this.gameOverDisplayed()) {
+          this.setView('game-over');
+        } else if (!this.gameStarted) {
           this.setView('welcome');
         } else if (this.gamePaused) {
           this.menuPausedOpen = true;

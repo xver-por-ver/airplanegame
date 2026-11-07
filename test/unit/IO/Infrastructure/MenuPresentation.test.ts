@@ -33,6 +33,29 @@ describe('MenuPresentation', () => {
     ]);
   });
 
+  test('restores game over after resolution recovers following defeat', () => {
+    const events = new EventBus<GameEvents>();
+    const presentation = new MenuPresentation(events);
+    events.emit('game.started', undefined);
+    events.emit('game.paused', { blockers: ['minimum-resolution'] });
+    events.emit('game.defeated', undefined);
+
+    presentation.animate(3000);
+    expect(presentation.getView()).toBe('game-over');
+
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: false,
+    });
+    expect(presentation.getView()).toBe('resolution-warning');
+
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: true,
+    });
+    expect(presentation.getView()).toBe('game-over');
+  });
+
   test('shows game over after the existing delay', () => {
     const events = new EventBus<GameEvents>();
     const presentation = new MenuPresentation(events);
