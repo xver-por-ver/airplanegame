@@ -26,14 +26,18 @@ export class MenuPresentation {
       this.gamePaused = true;
       if (blockers.some((blocker) => 'gameplay-hold' !== blocker)) {
         this.menuPausedOpen = true;
-        this.setView('paused');
+        if (!this.resolutionWarningOpen) {
+          this.setView('paused');
+        }
       }
     });
     events.on('game.resumed', () => {
       this.gamePaused = false;
       if (this.menuPausedOpen) {
         this.menuPausedOpen = false;
-        this.setView('hidden');
+        if (!this.resolutionWarningOpen) {
+          this.setView('hidden');
+        }
       }
     });
     events.on('window.availabilityChanged', ({ meetsMinimumResolution }) => {

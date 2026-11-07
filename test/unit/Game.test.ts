@@ -186,10 +186,12 @@ describe('Game', () => {
       meetsMinimumResolution: true,
     });
     events.emit('game.userPauseChanged', { paused: false });
-    expect(transitions).toEqual(['paused']);
+    expect(transitions).toHaveLength(5);
+    expect(transitions).not.toContain('resumed');
 
     events.emit('gameplay.holdChanged', { active: false, reason: 'base-hit' });
-    expect(transitions).toEqual(['paused', 'resumed']);
+    expect(transitions).toHaveLength(6);
+    expect(transitions[transitions.length - 1]).toBe('resumed');
   });
 
   test('continues requesting frames until the game-over delay elapses', () => {

@@ -21,6 +21,29 @@ describe('GameLifecycle', () => {
     expect(transitions).toEqual(['started', 'paused', 'resumed']);
   });
 
+  test('publishes updated blockers while already paused', () => {
+    const events = new EventBus<GameEvents>();
+    const lifecycle = new GameLifecycle(events);
+    const pauses: string[][] = [];
+    events.on('game.paused', ({ blockers }) =>
+      pauses.push(blockers),
+    );
+
+    lifecycle.start();
+    events.emit('gameplay.holdChanged', { active: true, reason: 'base-hit' });
+    events.emit('game.userPauseChanged', { paused: true });
+    events.emit('window.availabilityChanged', {
+      focused: true,
+      meetsMinimumResolution: false,
+    });
+
+    expect(pauses).toEqual([
+      ['gameplay-hold'],
+      ['user-pause', 'gameplay-hold'],
+      ['user-pause', 'minimum-resolution', 'gameplay-hold'],
+    ]);
+  });
+
   test('starts paused and resumes only after every blocker clears', () => {
     const events = new EventBus<GameEvents>();
     const lifecycle = new GameLifecycle(events);
@@ -48,6 +71,7 @@ describe('GameLifecycle', () => {
     expect(transitions).toEqual([
       'started',
       'paused:window-blur,minimum-resolution',
+      'paused:minimum-resolution',
       'resumed',
     ]);
   });

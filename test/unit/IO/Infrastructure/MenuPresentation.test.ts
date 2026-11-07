@@ -17,6 +17,8 @@ describe('MenuPresentation', () => {
       focused: true,
       meetsMinimumResolution: false,
     });
+    events.emit('game.paused', { blockers: ['user-pause', 'minimum-resolution'] });
+    expect(presentation.getView()).toBe('resolution-warning');
     events.emit('window.availabilityChanged', {
       focused: true,
       meetsMinimumResolution: true,
