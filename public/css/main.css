@@ -54,7 +54,9 @@ div#menu {
         linear-gradient(180deg, rgba(220, 230, 217, .06), transparent 70%),
         linear-gradient(180deg, #15272c, #0c191e);
     border-bottom: 2px solid rgba(230, 168, 78, .65);
-    box-shadow: 0 5px 22px rgba(0, 0, 0, .32);
+    box-shadow:
+        0 5px 22px rgba(0, 0, 0, .32),
+        0 3px 14px rgba(230, 168, 78, .12);
 }
 
 div#menu div#menuScore,
