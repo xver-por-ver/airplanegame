@@ -9,6 +9,7 @@ export class GameLifecycle {
   private meetsMinimumResolution: boolean = true;
   private gameplayHoldActive: boolean = false;
   private gameDefeated: boolean = false;
+  private pauseBlockers: GamePauseBlocker[] = [];
 
   constructor(private readonly events: EventBusInterface<GameEvents>) {
     this.events.on('game.userPauseChanged', ({ paused }) => {
@@ -54,6 +55,10 @@ export class GameLifecycle {
     }
 
     const blockers = this.getPauseBlockers();
+    const blockersChanged =
+      blockers.length !== this.pauseBlockers.length ||
+      blockers.some((blocker, index) => blocker !== this.pauseBlockers[index]);
+    this.pauseBlockers = blockers;
     const shouldRun = 0 === blockers.length;
     if (starting) {
       this.gameRunning = shouldRun;
@@ -64,6 +69,9 @@ export class GameLifecycle {
     }
 
     if (this.gameRunning === shouldRun) {
+      if (!shouldRun && blockersChanged) {
+        this.events.emit('game.paused', { blockers });
+      }
       return;
     }
 
