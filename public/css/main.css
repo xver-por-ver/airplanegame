@@ -50,7 +50,9 @@ div#menu {
     justify-content: space-between;
     align-items: center;
     gap: clamp(8px, 2vw, 24px);
-    background: linear-gradient(180deg, #15272c, #0c191e);
+    background:
+        linear-gradient(180deg, rgba(220, 230, 217, .06), transparent 70%),
+        linear-gradient(180deg, #15272c, #0c191e);
     border-bottom: 1px solid var(--panel-edge);
     box-shadow: 0 5px 22px rgba(0, 0, 0, .32);
 }
