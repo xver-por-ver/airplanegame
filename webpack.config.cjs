@@ -37,7 +37,7 @@ const config = {
       filename: 'error.html',
       template: 'templates/default.html',
       title: 'Airplanegame',
-      inject: 'body',
+      inject: false,
       scriptLoading: 'module',
       RELEASE_APP: releaseApp,
       bodyContent: fs.readFileSync(path.resolve(__dirname, './templates/pages/error.html'), {encoding: 'utf8'}),
