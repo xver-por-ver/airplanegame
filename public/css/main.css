@@ -187,7 +187,9 @@ div#menu div#menuHelp {
 }
 
 div#menu div#menuHelp a#helpButton,
-div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton {
+div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton,
+div#infoOverlay div#infoContainer a#gameStartButton,
+div#infoOverlay div#infoContainer div.missionEnd a {
     display: inline-block;
     padding: 9px 17px;
     border: 1px solid var(--signal-dim);
@@ -198,7 +200,10 @@ div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton {
     font-weight: 700;
     letter-spacing: .08em;
     text-decoration: none;
-    transition: background-color .16s ease, color .16s ease;
+    transition:
+        background-color .16s ease,
+        color .16s ease,
+        box-shadow .16s ease;
 }
 
 div#menu div#menuHelp a#helpButton:hover,
@@ -209,6 +214,11 @@ div#infoOverlay div#infoContainer div.helpMenu a#helpCloseButton:focus-visible {
     outline-offset: 3px;
     background: var(--signal);
     color: var(--ink);
+}
+
+div#menu div#menuHelp a#helpButton:hover,
+div#menu div#menuHelp a#helpButton:focus-visible {
+    box-shadow: 0 0 12px rgba(230, 168, 78, .38);
 }
 
 div#body {
@@ -356,6 +366,7 @@ div#infoOverlay div#infoContainer a#gameStartButton:focus-visible {
     outline: 3px solid var(--paper);
     outline-offset: 4px;
     background: #d4f48a;
+    box-shadow: 0 0 12px rgba(230, 168, 78, .38);
 }
 
 div#infoOverlay div#infoContainer aside.welcomeControls {
@@ -439,6 +450,7 @@ div#infoOverlay div#infoContainer div.missionEnd a:hover,
 div#infoOverlay div#infoContainer div.missionEnd a:focus-visible {
     outline: 3px solid var(--paper);
     outline-offset: 3px;
+    box-shadow: 0 0 12px rgba(230, 168, 78, .38);
 }
 
 div#infoOverlay div#infoContainer div.helpMenu h2 {
