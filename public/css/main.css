@@ -65,6 +65,7 @@ div#menu div#menuRadar {
 }
 
 div#menu div#menuScore {
+    border-top: 2px solid var(--signal);
     min-width: 174px;
     padding: 0 14px;
     display: flex;
@@ -82,6 +83,7 @@ div#menu div#menuScore #score {
 }
 
 div#menu div#menuRounds {
+    border-top: 2px solid var(--amber);
     width: 150px;
     padding: 0 12px;
     display: flex;
@@ -95,6 +97,7 @@ div#menu div#menuRounds .magazine {
 }
 
 div#menu div#menuRadar {
+    border-top: 2px solid var(--amber);
     width: min(300px, 34vw);
     height: 52px;
     padding: 2px 10px;
